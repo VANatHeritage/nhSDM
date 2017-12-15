@@ -1,0 +1,4 @@
+library(devtools)
+
+document()
+install()

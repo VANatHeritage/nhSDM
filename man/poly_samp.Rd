@@ -2,34 +2,45 @@
 % Please edit documentation in R/poly_samp.R
 \name{poly_samp}
 \alias{poly_samp}
-\title{Create points in polygons in unique raster cells,
-For each spatial polygon, a given number (\code{num_samps})
-of points are created in cells that the polygon intersects,
-with only one point allowed per cell (in the polygon and the
-entire dataset).}
+\title{Create points in polygons in unique raster cells}
 \usage{
-poly_samp(spP, rast, num.samps = NULL)
+poly_samp(spP, rast, num.samps = NULL, replace = FALSE)
 }
 \arguments{
 \item{spP}{SpatialPolygons[DataFrame]}
 
-\item{rast}{raster dataset with extent greater or equal to spP}
+\item{rast}{raster dataset with extent overlapping spP}
 
-\item{num.samps}{number of samples to create in each polygon}
+\item{num.samps}{number of samples to create in each polygon (see details)}
 }
 \description{
-\code{num.samps} can be a single integer, or vector of integers 
-equal to length of spP. If left NULL, the number of samples per
-polygon will be equal to {[area of polygon]/[area of raster cell] * 5}.
-If the number of samples to create exceeds the number of cells in a given
-polygon, the number of samples is set to the number of cells.
+For each spatial polygon, a given number (\code{num_samps})
+of points are created in cells that the polygon intersects.
+}
+\details{
+\code{num.samps} can be a a proportion (decimal value < 1), single integer,
+or vector of integers equal to length of spP. If left NULL, \code{num.samps} will
+be set to the number of cells [n] intersecting the polygon. If a proportion is given
+(e.g., 0.5), than [n * num.samps] will be returned. If a single integer is given,
+\code{num.samps} points will be sampled in each polygon.
+
+If \code{replace = FALSE} (default), each cell can only contain one point (across
+each polygon, and the entire returned set of points). If the number
+of samples points to create exceeds the number of unique cells in a given
+polygon, the number of samples for that polygon is set to the number of cells.
+If \code{replace = TRUE}, sampling is done with replacement and duplicates
+will be allowed. This is the only way to return a number of points
+greater than the number of cells within a polygon.
+
+If CRS do not match, the SpatialPolygons will be transformed to the CRS
+of the raster.
 }
 \examples{
 \dontrun{
-a<-raster("D:/SDM/Tobacco/env_vars/Tobacco/AnnMnTemp.tif")
+r<-raster("D:/SDM/Tobacco/env_vars/Tobacco/AnnMnTemp.tif")
 spP <- readOGR("D:/SDM/Tobacco/inputs/species/ambymabe/polygon_data", "ambymabe_expl")
 s <- c(4,3,5)[spP$RA]
-sp <- poly_samp(spP, a, s)
+sp <- poly_samp(spP, r, s)
 }
 }
 \author{
