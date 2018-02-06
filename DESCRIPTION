@@ -6,7 +6,7 @@ Description: Miscellaneous tools for working with Natural Heritage data in
   Species Distribution Modelling (SDM) workflows.
 Depends: R (>= 3.4.1)
 Imports: sp, rgeos, raster, sf, methods, shiny, leaflet
-Suggests: dplyr
+Suggests: dplyr, maptools
 License: GPL-3
 Encoding: UTF-8
 LazyData: true
