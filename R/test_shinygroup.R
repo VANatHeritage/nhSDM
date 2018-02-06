@@ -1,17 +1,27 @@
-library(raster)
-library(rgdal)
-library(leaflet)
-library(shiny)
+# shiny_group
 
-shiny_group <- function() {
+#' Interactively view (in a leaflet map) and select grouping distance
+#'
+#' @param spP A SpatialPolygons* object
+#'
+#' @importFrom leaflet leaflet addTiles addPolygons renderLeaflet colorFactor leafletOutput %>%
+#' @importFrom shiny shinyApp reactive absolutePanel bootstrapPage sliderInput tags
+#' @importFrom grDevices rainbow
+#'
+#' @examples
+#' \dontrun{
+#' spP <- readOGR("D:/SDM/Tobacco/inputs/species/ambymabe/polygon_data", "ambymabe_expl")
+#' shiny_group(spP)
+#' }
+
+
+shiny_group <- function(spP) {
   shinyApp(ui = bootstrapPage(
     tags$style(type = "text/css", "html, body {width:100%;height:100%}"),
     leafletOutput("map", width = "100%", height = "100%"),
     absolutePanel(top = 10, right = 10,
                   sliderInput("sep", "Seperation distance", min = 0, max = 10000, value = 1000, step = 100)
   )), server = function(input, output, session) {
-    # a<-raster("D:/SDM/Tobacco/env_vars/Tobacco/AnnMnTemp.tif")
-    spP <- readOGR("D:/SDM/Tobacco/inputs/species/ambymabe/polygon_data", "ambymabe_expl")
 
     pg <- reactive({
       pg <- poly_group(spP, sep.dist = input$sep, union = FALSE)
