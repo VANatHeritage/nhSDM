@@ -42,22 +42,31 @@ poly_group <- function(spP, sep.dist, union = FALSE) {
 
   # group
   for (n in colnames(gd)) {
-    if (is.na(grps[n])) grps[n] <- n
-    d <- gd[n]
-    if (min(d, na.rm = T) < sep.dist) {
-      subg <- subset(d, d[n] < sep.dist)
-      if (all(is.na(grps[row.names(subg)]))) {
-        grps[row.names(subg)] <- n
-      } else {
-        grps[n] <- min(unlist(grps[row.names(subg)]), na.rm = T)
-        grps[row.names(subg)] <- min(unlist(grps[row.names(subg)]), na.rm = T)
+    if (is.na(grps[n])) grps[n] <- n else next
+    unass <- names(grps)[is.na(grps)]
+    if (length(unass) == 0) break
+    d <- gd[n,]
+    subg <- names(d[unass])[d[unass] <= sep.dist]
+    lb <- 0
+    la <- 1
+    done <- character(0)
+    while (lb != la) {
+      lb <- length(subg)
+      for (i in subg) {
+        if (!i %in% done) {
+          d <- gd[i,]
+          add <- names(d[unass])[d[unass] <= sep.dist]
+          subg <- c(subg, add[!add %in% subg])
+          done <- c(done, i)
+        }
       }
+      la <- length(subg)
     }
+    grps[subg] <- n
   }
 
-  polyg <- data.frame(TEMPRN = names(grps), group = unlist(grps))
+  polyg <- data.frame(TEMPRN = names(grps), group = as.numeric(unlist(grps)))
   spP <-merge(spP, polyg, by = "TEMPRN")
-  spP$group <- as.numeric(spP$group)
   spP$TEMPRN <- NULL
 
   if (union) {
