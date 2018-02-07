@@ -1,12 +1,13 @@
 Package: nhSDM
 Title: Tools for Natural Heritage SDMs
+Date: 2018-02-07
 Version: 0.0.0-2
 Authors@R: person("David", "Bucklin", email = "david.bucklin@gmail.com", role = c("aut", "cre"))
 Description: Miscellaneous tools for working with Natural Heritage data in
   Species Distribution Modelling (SDM) workflows.
 Depends: R (>= 3.4.1)
-Imports: sp, rgeos, raster, sf, methods, shiny, leaflet
-Suggests: dplyr, maptools
+Imports: sp, rgeos, raster, sf, methods, shiny, leaflet, maptools
+Suggests: dplyr, lwgeom
 License: GPL-3
 Encoding: UTF-8
 LazyData: true

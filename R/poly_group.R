@@ -3,7 +3,7 @@
 #' Group spatial polygons using a defined separation distance
 #'
 #' Input polygons are allocated into new groups depending
-#' on whether they lie within the seperation distance of
+#' on whether they lie within the separation distance of
 #' another input polygon.
 #'
 #' The grouping is done by input ID, so multi-polygons

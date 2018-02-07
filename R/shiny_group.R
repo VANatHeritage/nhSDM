@@ -8,6 +8,8 @@
 #' @importFrom shiny shinyApp reactive absolutePanel bootstrapPage sliderInput tags
 #' @importFrom grDevices rainbow
 #'
+#' @export
+#'
 #' @examples
 #' \dontrun{
 #' spP <- readOGR("D:/SDM/Tobacco/inputs/species/ambymabe/polygon_data", "ambymabe_expl")
@@ -20,11 +22,11 @@ shiny_group <- function(spP) {
     tags$style(type = "text/css", "html, body {width:100%;height:100%}"),
     leafletOutput("map", width = "100%", height = "100%"),
     absolutePanel(top = 10, right = 10,
-                  sliderInput("sep", "Seperation distance", min = 0, max = 10000, value = 1000, step = 100)
+                  sliderInput("sep", "Separation distance", min = 0, max = 50000, value = 1000, step = 100)
   )), server = function(input, output, session) {
 
     pg <- reactive({
-      pg <- poly_group(spP, sep.dist = input$sep, union = FALSE)
+      pg <- nh_group(spP, sep.dist = input$sep, union = FALSE)
       pg <- spTransform(pg, CRSobj = "+init=epsg:4326")
       pg$group <- as.factor(pg$group)
       pg

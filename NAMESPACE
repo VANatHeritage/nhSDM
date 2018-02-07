@@ -3,6 +3,7 @@
 export(nh_group)
 export(nh_sample)
 export(poly_group)
+export(shiny_group)
 importFrom(grDevices,rainbow)
 importFrom(leaflet,"%>%")
 importFrom(leaflet,addPolygons)

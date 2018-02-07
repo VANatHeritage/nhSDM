@@ -15,7 +15,7 @@ nh_group(spP, sep.dist = 0, union = FALSE)
 }
 \description{
 Input features are allocated into new groups depending
-on whether they lie within the seperation distance of
+on whether they lie within the separation distance of
 another input feature.
 }
 \details{
@@ -23,7 +23,7 @@ The grouping is done by input ID, so multi-features
 are considered one input feature (they will not be
 be ungrouped).
 
-The seperation distance \code{sep.dist} is numeric and in the
+The separation distance \code{sep.dist} is numeric and in the
 units of \code{spP}'s coordinate system, unless the
 coordinate system uses latitude/longitude as the unit (e.g. WGS 84). In
 these cases, geodesic distances will be used and \code{sep.dist}

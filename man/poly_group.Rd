@@ -15,7 +15,7 @@ poly_group(spP, sep.dist, union = FALSE)
 }
 \description{
 Input polygons are allocated into new groups depending
-on whether they lie within the seperation distance of
+on whether they lie within the separation distance of
 another input polygon.
 }
 \details{
