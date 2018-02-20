@@ -4,10 +4,10 @@
 \alias{nh_group}
 \title{Group spatial features using a defined separation distance}
 \usage{
-nh_group(spP, sep.dist = 0, union = FALSE)
+nh_group(spf, sep.dist = 0, union = FALSE)
 }
 \arguments{
-\item{spP}{input sp or sf spatial object}
+\item{spf}{input spatial features (sp or sf spatial object)}
 
 \item{sep.dist}{separation distance with which to define groups (see description)}
 
@@ -24,7 +24,7 @@ are considered one input feature (they will not be
 be ungrouped).
 
 The separation distance \code{sep.dist} is numeric and in the
-units of \code{spP}'s coordinate system, unless the
+units of \code{spf}'s coordinate system, unless the
 coordinate system uses latitude/longitude as the unit (e.g. WGS 84). In
 these cases, geodesic distances will be used and \code{sep.dist}
 should be specified in meters.
@@ -37,8 +37,8 @@ requires the package \code{dplyr} to be installed.
 }
 \examples{
 \dontrun{
-spP <- rgdal::readOGR("D:/SDM/Tobacco/inputs/species/ambymabe/polygon_data", "ambymabe")
-spg <- nh_group(spP, 1000)
+spf <- rgdal::readOGR("D:/SDM/Tobacco/inputs/species/ambymabe/polygon_data", "ambymabe")
+spg <- nh_group(spf, 1000)
 }
 }
 \author{

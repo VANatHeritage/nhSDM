@@ -4,12 +4,12 @@
 \alias{nh_sample}
 \title{Create points in polygons in reference raster cells}
 \usage{
-nh_sample(spP, rast, num.samps = NULL, replace = FALSE, force.min = FALSE)
+nh_sample(spf, rast, num.samps = NULL, replace = FALSE, force.min = FALSE)
 }
 \arguments{
-\item{spP}{SpatialPolygons[DataFrame]}
+\item{spf}{input spatial features (sp or sf spatial object)}
 
-\item{rast}{raster dataset with extent overlapping spP}
+\item{rast}{raster dataset with extent overlapping spf}
 
 \item{num.samps}{number of samples to create in each polygon (see details)}
 
@@ -23,7 +23,7 @@ of points are created in cells that the polygon intersects.
 }
 \details{
 \code{num.samps} can be a a proportion (a decimal value < 1), single integer,
-or vector of integers equal to length of spP indicated the number of samples
+or vector of integers equal to length of spf indicated the number of samples
 to take from each polygon. If left NULL, \code{num.samps} will
 be set to the number of cells [n] intersecting the polygon. If a proportion is given
 (e.g., 0.5), than [n * num.samps] will be returned. If a single integer is given,
@@ -46,13 +46,13 @@ of the raster.
 \examples{
 \dontrun{
 r<-raster::raster("D:/SDM/Tobacco/env_vars/Tobacco/AnnMnTemp.tif")
-spP <- rgdal::readOGR("D:/SDM/Tobacco/inputs/species/ambymabe/polygon_data", "ambymabe")
-spg <- nh_sample(spP, 1000, TRUE)
+spf <- rgdal::readOGR("D:/SDM/Tobacco/inputs/species/ambymabe/polygon_data", "ambymabe")
+spg <- nh_sample(spf, 1000, TRUE)
 rast <- r
 num.samps <- 10
 replace <- FALSE
 force.min <- FALSE
-sp.sing <- nh_sample(spP, r, num.samps)
+sp.sing <- nh_sample(spf, r, num.samps)
 sp.mult <- nh_sample(spg, r, num.samps)
 }
 }

@@ -11,7 +11,7 @@
 #' be ungrouped).
 #'
 #' The separation distance \code{sep.dist} is numeric and in the
-#' units of \code{spP}'s coordinate system, unless the
+#' units of \code{spf}'s coordinate system, unless the
 #' coordinate system uses latitude/longitude as the unit (e.g. WGS 84). In
 #' these cases, geodesic distances will be used and \code{sep.dist}
 #' should be specified in meters.
@@ -22,7 +22,7 @@
 #' (the number of original features in the group) will be returned. This feature
 #' requires the package \code{dplyr} to be installed.
 #'
-#' @param spP input sp or sf spatial object
+#' @param spf input spatial features (sp or sf spatial object)
 #' @param sep.dist separation distance with which to define groups (see description)
 #' @param union whether to union output groups into multi-features
 #'
@@ -30,43 +30,45 @@
 #'
 #' @importFrom methods as
 #' @importFrom sf st_as_sf st_distance st_is_longlat
+#' @importFrom utils installed.packages
 #'
 #' @export
 #'
 #' @examples
 #' \dontrun{
-#' spP <- rgdal::readOGR("D:/SDM/Tobacco/inputs/species/ambymabe/polygon_data", "ambymabe")
-#' spg <- nh_group(spP, 1000)
+#' spf <- rgdal::readOGR("D:/SDM/Tobacco/inputs/species/ambymabe/polygon_data", "ambymabe")
+#' spg <- nh_group(spf, 1000)
 #' }
 
-nh_group <- function(spP, sep.dist = 0, union = FALSE) {
+nh_group <- function(spf, sep.dist = 0, union = FALSE) {
 
   # make sure spdf
 
   # handle name conflicts...
   # dt <- gsub("\\s|:|-", "", as.character(Sys.time()))
-  #  if ("group" %in% names(spP))
+  #  if ("group" %in% names(spf))
 
-  if (grepl("^Spatial*", class(spP)[1])) {
+  if (grepl("^Spatial*", class(spf)[1])) {
     sp <- TRUE
-    spP <- st_as_sf(spP)
-  } else if (grepl("sf", class(spP)[1])) {
+    spf <- st_as_sf(spf)
+  } else if (grepl("sf", class(spf)[1])) {
     sp <- FALSE
   } else {
     stop("Must provide either 'sp' or 'sf'-class spatial object.")
   }
+  spf <- st_zm(spf)
 
-  row.names(spP) <- 1:length(spP$geometry)
-  spP$TEMPRN <- row.names(spP)
+  row.names(spf) <- 1:length(spf$geometry)
+  spf$TEMPRN <- row.names(spf)
 
-  if (isTRUE(st_is_longlat(spP))) {
+  if (isTRUE(st_is_longlat(spf))) {
       if (!"lwgeom" %in% installed.packages()) stop("Need to install package 'lwgeom' for lat/lon distance calculations.")
       message("Using geodesic distance calculation (in meters)...")
   } else {
       message("Distances calculated in coordinate system units...")
   }
 
-  gd <- as.data.frame(st_distance(spP))
+  gd <- as.data.frame(st_distance(spf))
   for (i in names(gd)) gd[i] <- as.numeric(gd[,i]) # remove units
   names(gd) <- row.names(gd)
 
@@ -100,18 +102,16 @@ nh_group <- function(spP, sep.dist = 0, union = FALSE) {
   }
 
   polyg <- data.frame(TEMPRN = names(grps), group = as.numeric(unlist(grps)))
-  spP <-merge(spP, polyg, by = "TEMPRN")
-  spP$TEMPRN <- NULL
+  spf <-merge(spf, polyg, by = "TEMPRN")
+  spf$TEMPRN <- NULL
 
   if (union) {
     if (!"dplyr" %in% installed.packages()) {
       message("Install 'dplyr' to enable union. Returning non-unioned features...")
       break
     }
-    spP <- spP %>% dplyr::group_by(group) %>% dplyr::summarize(count = n())
-    # spP <- unionSpatialPolygons(spP, spP$group)
-    # spP <- SpatialPolygonsDataFrame(spP, data = data.frame(group=row.names(spP), row.names = row.names(spP)), match.ID = TRUE)
+    spf <- spf %>% dplyr::group_by(group) %>% dplyr::summarize(count = n())
   }
 
-  if (sp) return(as(spP,Class = "Spatial")) else return(spP)
+  if (sp) return(as(spf,Class = "Spatial")) else return(spf)
 }

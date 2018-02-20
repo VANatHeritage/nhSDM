@@ -1,0 +1,6 @@
+nhSDM 0.0.1
+=================
+
+** INITIAL RELEASE ON GITHUB **
+
+* switched functions to use `sf` methods with `sp` support

@@ -2,22 +2,23 @@
 
 #' Interactively view (in a leaflet map) and select grouping distance
 #'
-#' @param spP A SpatialPolygons* object
+#' @param spf input spatial features (sp or sf spatial object)
 #'
-#' @importFrom leaflet leaflet addTiles addPolygons renderLeaflet colorFactor leafletOutput %>%
-#' @importFrom shiny shinyApp reactive absolutePanel bootstrapPage sliderInput tags
+#' @import leaflet
+#' @import shiny
+#' @importFrom sp spTransform
 #' @importFrom grDevices rainbow
 #'
 #' @export
 #'
 #' @examples
 #' \dontrun{
-#' spP <- readOGR("D:/SDM/Tobacco/inputs/species/ambymabe/polygon_data", "ambymabe_expl")
-#' shiny_group(spP)
+#' spf <- readOGR("D:/SDM/Tobacco/inputs/species/ambymabe/polygon_data", "ambymabe_expl")
+#' shiny_group(spf)
 #' }
 
 
-shiny_group <- function(spP) {
+shiny_group <- function(spf) {
   shinyApp(ui = bootstrapPage(
     tags$style(type = "text/css", "html, body {width:100%;height:100%}"),
     leafletOutput("map", width = "100%", height = "100%"),
@@ -26,7 +27,7 @@ shiny_group <- function(spP) {
   )), server = function(input, output, session) {
 
     pg <- reactive({
-      pg <- nh_group(spP, sep.dist = input$sep, union = FALSE)
+      pg <- nh_group(spf, sep.dist = input$sep, union = FALSE)
       pg <- spTransform(pg, CRSobj = "+init=epsg:4326")
       pg$group <- as.factor(pg$group)
       pg

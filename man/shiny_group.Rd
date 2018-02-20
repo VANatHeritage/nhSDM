@@ -4,17 +4,17 @@
 \alias{shiny_group}
 \title{Interactively view (in a leaflet map) and select grouping distance}
 \usage{
-shiny_group(spP)
+shiny_group(spf)
 }
 \arguments{
-\item{spP}{A SpatialPolygons* object}
+\item{spf}{input spatial features (sp or sf spatial object)}
 }
 \description{
 Interactively view (in a leaflet map) and select grouping distance
 }
 \examples{
 \dontrun{
-spP <- readOGR("D:/SDM/Tobacco/inputs/species/ambymabe/polygon_data", "ambymabe_expl")
-shiny_group(spP)
+spf <- readOGR("D:/SDM/Tobacco/inputs/species/ambymabe/polygon_data", "ambymabe_expl")
+shiny_group(spf)
 }
 }
