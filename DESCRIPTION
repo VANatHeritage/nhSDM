@@ -6,7 +6,7 @@ Authors@R: person("David", "Bucklin", email = "david.bucklin@gmail.com", role = 
 Description: Miscellaneous tools for working with Natural Heritage data in
   Species Distribution Modelling (SDM) workflows.
 Depends: R (>= 3.4.1)
-Imports: methods, sf, raster, sp
+Imports: methods, sf, raster, sp, shiny, leaflet
 Suggests: dplyr, lwgeom
 License: GPL-3
 Encoding: UTF-8
