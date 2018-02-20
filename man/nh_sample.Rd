@@ -20,6 +20,7 @@ nh_sample(spf, rast, num.samps = NULL, replace = FALSE, force.min = FALSE)
 \description{
 For each spatial polygon, a given number (\code{num_samps})
 of points are created in cells that the polygon intersects.
+The points will inherit the raster's projection.
 }
 \details{
 \code{num.samps} can be a a proportion (a decimal value < 1), single integer,
@@ -47,13 +48,8 @@ of the raster.
 \dontrun{
 r<-raster::raster("D:/SDM/Tobacco/env_vars/Tobacco/AnnMnTemp.tif")
 spf <- rgdal::readOGR("D:/SDM/Tobacco/inputs/species/ambymabe/polygon_data", "ambymabe")
-spg <- nh_sample(spf, 1000, TRUE)
-rast <- r
-num.samps <- 10
-replace <- FALSE
-force.min <- FALSE
-sp.sing <- nh_sample(spf, r, num.samps)
-sp.mult <- nh_sample(spg, r, num.samps)
+spf <- sf::st_read("D:/SDM/Tobacco/inputs/species/ambymabe/polygon_data/ambymabe.shp")
+spf.samps <- nh_sample(spf, r, num.samps)
 }
 }
 \author{

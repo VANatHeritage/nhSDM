@@ -4,6 +4,7 @@
 #'
 #' For each spatial polygon, a given number (\code{num_samps})
 #' of points are created in cells that the polygon intersects.
+#' The points will inherit the raster's projection.
 #'
 #' \code{num.samps} can be a a proportion (a decimal value < 1), single integer,
 #' or vector of integers equal to length of spf indicated the number of samples
@@ -43,13 +44,8 @@
 #' \dontrun{
 #' r<-raster::raster("D:/SDM/Tobacco/env_vars/Tobacco/AnnMnTemp.tif")
 #' spf <- rgdal::readOGR("D:/SDM/Tobacco/inputs/species/ambymabe/polygon_data", "ambymabe")
-#' spg <- nh_sample(spf, 1000, TRUE)
-#' rast <- r
-#' num.samps <- 10
-#' replace <- FALSE
-#' force.min <- FALSE
-#' sp.sing <- nh_sample(spf, r, num.samps)
-#' sp.mult <- nh_sample(spg, r, num.samps)
+#' spf <- sf::st_read("D:/SDM/Tobacco/inputs/species/ambymabe/polygon_data/ambymabe.shp")
+#' spf.samps <- nh_sample(spf, r, num.samps)
 #' }
 
 nh_sample <- function(spf, rast, num.samps = NULL, replace = FALSE, force.min = FALSE) {
@@ -64,8 +60,6 @@ nh_sample <- function(spf, rast, num.samps = NULL, replace = FALSE, force.min = 
   }
   spf <- st_zm(spf)
 
-
-
   if (!is.null(num.samps)) {
     if (length(num.samps) == 1) {
       num.samps <- rep(num.samps, length(spf$geometry))
@@ -74,7 +68,12 @@ nh_sample <- function(spf, rast, num.samps = NULL, replace = FALSE, force.min = 
     }
   }
   # transform if necessary
-  if (st_crs(spf)$proj4string != projection(rast)) spf <- st_transform(spf, crs = projection(rast))
+  if (!is.na(st_crs(spf)$proj4string)) {
+    if (st_crs(spf)$proj4string != projection(rast)) spf <- st_transform(spf, crs = projection(rast))
+  } else {
+    message("No projection on input features. Assuming features are using raster's projection...")
+    st_crs(spf) <- projection(rast)
+  }
   # seq raster
   r1 <- crop(rast, extent(extent(spf)[1], extent(spf)[2], extent(spf)[3], extent(spf)[4])) # bug when applying extent object from spf directly
   r2 <- r1
