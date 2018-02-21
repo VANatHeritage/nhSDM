@@ -37,7 +37,7 @@ requires the package \code{dplyr} to be installed.
 }
 \examples{
 \dontrun{
-spf <- rgdal::readOGR("D:/SDM/Tobacco/inputs/species/ambymabe/polygon_data", "ambymabe")
+spf <- rgdal::readOGR("ambymabe/polygon_data", "ambymabe")
 spg <- nh_group(spf, 1000)
 }
 }
