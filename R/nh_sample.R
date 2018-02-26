@@ -12,11 +12,11 @@
 #' (e.g., 0.5), than [n * num.samps] will be returned. If a single integer is given,
 #' \code{num.samps} points will be sampled in each polygon.
 #'
-#' When \code{replace = FALSE} and {force.min = FALSE} (defaults),
+#' When \code{replace = FALSE} and \code{force.min = FALSE} (defaults),
 #' each cell can only contain one point (across
 #' each polygon, and the entire returned set of points). In this case, when the number
 #' of samples points to create exceeds the number of unique cells intersected by a given
-#' polygon, the number of samples for that polygon is reduced to the number of cells.
+#' polygon, the number of samples for that polygon equals the number of cells.
 #' If \code{replace = TRUE}, sampling is done with replacement and duplicates
 #' may be taken. The special case \code{replace = FALSE} and \code{force.min = TRUE}
 #' will always return \code{num.samps} per polygon. It only produces duplicates
@@ -25,13 +25,16 @@
 #'
 #' If CRS do not match, the SpatialPolygons will be transformed to the CRS
 #' of the raster.
+#' 
+#' A column `poly.id` is added to the output point features to indicate the row number
+#' of the polygon that the point was generated within.
 
 #' @param spf input spatial features (sp or sf spatial object)
 #' @param rast raster dataset with extent overlapping spf
 #' @param num.samps number of samples to create in each polygon (see details)
 #' @param replace whether to sample with or without replacement
-#' @param force.min whether to always create \code{num.samps} points, even if they are duplicates
-#'
+#' @param force.min whether to force \code{num.samps} points in polygons, even if they are duplicates
+#' 
 #' @author David Bucklin
 #'
 #' @import sf
