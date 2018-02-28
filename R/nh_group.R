@@ -48,15 +48,11 @@ nh_group <- function(spf, sep.dist = 0, union = FALSE) {
   # dt <- gsub("\\s|:|-", "", as.character(Sys.time()))
   #  if ("group" %in% names(spf))
 
-  if (grepl("^Spatial*", class(spf)[1])) {
-    sp <- TRUE
-    spf <- st_as_sf(spf)
-  } else if (grepl("sf", class(spf)[1])) {
-    sp <- FALSE
-  } else {
-    stop("Must provide either 'sp' or 'sf'-class spatial object.")
-  }
-  spf <- st_zm(spf)
+  # handle sp/sf class
+  spf1 <- tospf(spf)
+  sp <- spf1[[1]]
+  spf <- spf1[[2]]
+  rm(spf1)
 
   row.names(spf) <- 1:length(spf$geometry)
   spf$TEMPRN <- row.names(spf)

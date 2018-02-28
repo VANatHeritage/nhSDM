@@ -52,15 +52,11 @@
 
 nh_sample <- function(spf, rast, num.samps = NULL, replace = FALSE, force.min = FALSE) {
 
-  if (grepl("^Spatial*", class(spf)[1])) {
-    sp <- TRUE
-    spf <- st_as_sf(spf)
-  } else if (grepl("sf", class(spf)[1])) {
-    sp <- FALSE
-  } else {
-    stop("Must provide either 'sp' or 'sf'-class spatial object.")
-  }
-  spf <- st_zm(spf)
+  # handle sp/sf class
+  spf1 <- tospf(spf, rast)
+  sp <- spf1[[1]]
+  spf <- spf1[[2]]
+  rm(spf1)
 
   if (!is.null(num.samps)) {
     if (length(num.samps) == 1) {
