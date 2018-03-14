@@ -7,3 +7,5 @@ Install using `devtools`:
 ```
 devtools::install_github("VANatHeritage/nhSDM")
 ```
+
+Submit feature requests and bugs on the [issues](https://github.com/VANatHeritage/nhSDM/issues) page.

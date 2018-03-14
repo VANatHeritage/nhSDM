@@ -7,6 +7,8 @@
 #' @param spf input sf or sp object
 #' @param rastproj raster dataset with desired output projection
 #' 
+#' @return sf object
+#' 
 #' @import sf
 #' @importFrom methods as
 #' @importFrom raster projection
@@ -19,6 +21,7 @@ tospf <- function(spf, rastproj) {
     spf <- st_as_sf(spf)
   } else if (grepl("sf", class(spf)[1])) {
     sp <- FALSE
+    names(spf)[length(names(spf))] <- "geometry"
   } else {
     stop("Must provide either 'sp' or 'sf'-class spatial object.")
   }

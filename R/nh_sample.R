@@ -1,39 +1,41 @@
 # nh_sample
 
-#' Create points in polygons in reference raster cells
+#' Create points in features in reference raster cells
 #'
-#' For each spatial polygon, a given number (\code{num_samps})
-#' of points are created in cells that the polygon intersects.
+#' For each spatial feature, a given number (\code{num_samps})
+#' of points are created in cells that the feature intersects.
 #'
 #' \code{num.samps} can be a a proportion (a decimal value < 1), single integer,
 #' or vector of integers equal to length of spf indicated the number of samples
-#' to take from each polygon. If left NULL, \code{num.samps} will
-#' be set to the number of cells [n] intersecting the polygon. If a proportion is given
+#' to take from each feature. If left NULL, \code{num.samps} will
+#' be set to the number of cells [n] intersecting the feature. If a proportion is given
 #' (e.g., 0.5), than [n * num.samps] will be returned. If a single integer is given,
-#' \code{num.samps} points will be sampled in each polygon.
+#' \code{num.samps} points will be sampled in each feature.
 #'
 #' When \code{replace = FALSE} and \code{force.min = FALSE} (defaults),
 #' each cell can only contain one point (across
-#' each polygon, and the entire returned set of points). In this case, when the number
+#' each feature, and the entire returned set of points). In this case, when the number
 #' of samples points to create exceeds the number of unique cells intersected by a given
-#' polygon, the number of samples for that polygon equals the number of cells.
+#' feature, the number of samples for that feature equals the number of cells.
 #' If \code{replace = TRUE}, sampling is done with replacement and duplicates
 #' may be taken. The special case \code{replace = FALSE} and \code{force.min = TRUE}
-#' will always return \code{num.samps} per polygon. It only produces duplicates
-#' if \code{num.samps} exceeds the number of cells intersecting the polygon,
+#' will always return \code{num.samps} per feature. It only produces duplicates
+#' if \code{num.samps} exceeds the number of cells intersecting the feature,
 #' in which case it will replicate the samples until \code{num.samps} is reached.
 #'
-#' If CRS do not match, the SpatialPolygons will be transformed to the CRS
+#' If CRS do not match, the features will be transformed to the CRS
 #' of the raster.
 #' 
-#' A column `poly.id` is added to the output point features to indicate the row number
-#' of the polygon that the point was generated within.
+#' A column `feat.id` is added to the output point features to indicate the row number
+#' of the feature that the point was generated within.
 
 #' @param spf input spatial features (sp or sf spatial object)
 #' @param rast raster dataset with extent overlapping spf
-#' @param num.samps number of samples to create in each polygon (see details)
+#' @param num.samps number of samples to create in each feature (see details)
 #' @param replace whether to sample with or without replacement
-#' @param force.min whether to force \code{num.samps} points in polygons, even if they are duplicates
+#' @param force.min whether to force \code{num.samps} points in features, even if they are duplicates
+#' 
+#' @return sp or sf object (points)
 #' 
 #' @author David Bucklin
 #'
@@ -126,7 +128,7 @@ nh_sample <- function(spf, rast, num.samps = NULL, replace = FALSE, force.min = 
     }
     pts.out <- pts.s
     row.names(pts.out) <- paste0(row.names(p),".",row.names(pts.s))
-    pts.out$poly.id <- rep(as.character(row.names(p)), length(pts.s$geometry))
+    pts.out$feat.id <- rep(as.character(row.names(p)), length(pts.s$geometry))
 
     # rbind pts
     if (!exists("sp.out")) sp.out <- pts.out else sp.out <- rbind(sp.out, pts.out)

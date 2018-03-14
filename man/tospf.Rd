@@ -11,6 +11,9 @@ tospf(spf, rastproj)
 
 \item{rastproj}{raster dataset with desired output projection}
 }
+\value{
+sf object
+}
 \description{
 Return a list with sp-flag and sf object, given either sf or sp object
 }

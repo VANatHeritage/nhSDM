@@ -21,6 +21,8 @@
 #' @param buffer numeric; spatial buffer around spf to include in burn-in
 #' @param ... additional paramaters to \code{raster::writeRaster}
 #' 
+#' @return RasterLayer
+#' 
 #' @author David Bucklin
 #'
 #' @importFrom methods as

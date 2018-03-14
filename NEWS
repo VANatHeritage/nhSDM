@@ -1,6 +1,15 @@
 nhSDM 0.0.1
 =================
+2018-02-08
 
 ** INITIAL RELEASE ON GITHUB **
 
 * switched functions to use `sf` methods with `sp` support
+
+nhSDM 0.0.1-1
+=================
+2018-03-14
+
+* New functions `nh_burn`, `nh_best`
+
+* internal function script added.

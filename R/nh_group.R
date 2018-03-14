@@ -25,6 +25,8 @@
 #' @param spf input spatial features (sp or sf spatial object)
 #' @param sep.dist separation distance with which to define groups (see description)
 #' @param union whether to union output groups into multi-features
+#' 
+#' @return sp or sf object (same as input)
 #'
 #' @author David Bucklin
 #'
@@ -106,6 +108,7 @@ nh_group <- function(spf, sep.dist = 0, union = FALSE) {
       message("Install 'dplyr' to enable union. Returning non-unioned features...")
       break
     }
+    group<-NULL # just here to avoid check() notes (undefined global variable)
     spf <- spf %>% dplyr::group_by(group) %>% dplyr::summarize(count = n())
   }
 

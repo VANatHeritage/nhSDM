@@ -17,6 +17,9 @@ nh_burn(spf, rast, orig.thresh = NULL, buffer = 0, ...)
 
 \item{...}{additional paramaters to \code{raster::writeRaster}}
 }
+\value{
+RasterLayer
+}
 \description{
 Takes spatial features, a continuous raster (values between 0 and 1), and 
 returns a classified binary (0/1) raster. Areas greater than \code{orig.thresh} are
