@@ -15,7 +15,7 @@ nh_burn(spf, rast, orig.thresh = NULL, buffer = 0, ...)
 
 \item{buffer}{numeric; spatial buffer around spf to include in burn-in}
 
-\item{...}{additional paramaters to \code{raster::writeRaster}}
+\item{...}{additional parameters to \code{raster::writeRaster}}
 }
 \value{
 RasterLayer
@@ -24,16 +24,20 @@ RasterLayer
 Takes spatial features, a continuous raster (values between 0 and 1), and 
 returns a classified binary (0/1) raster. Areas greater than \code{orig.thresh} are
 set to 1, all others 0. Areas intersecting \code{spf} features
-are assigned a value of 1 in the returned classified raster.
+are assigned a value of 1 in the returned classified raster. See details
+for default calculation of \code{orig.thresh} and usage of \code{buffer}.
 }
 \details{
-If \code{buffer} is not 0, areas within that buffer around \code{spf} that are greater 
-than the minimum cell value (min.cell) within \code{spf} are set to 1 
-in the classified raster.
+A minimum cell value (min.cell) across all \code{spf} is calculated.
+If \code{orig.thresh} is NULL, the min.cell value will be used as a threshold
+for the full raster.
 
-If \code{orig.thresh} is NULL, the min.cell value will be used as a global threshold.
-When a given \code{orig.thresh} is less than the min.cell value, the result
-will be the same as a thresholded raster using \code{orig.thresh}.
+If \code{buffer} is greater than 0 \code{orig.thresh} is not NULL, \code{orig.thresh}
+is used as the threshold for the full raster. Additionally,
+cells within \code{buffer} distance of \code{spf} which are greater than min.cell
+are also set to 1. As a result, if a given \code{orig.thresh} is lower 
+than the calculated min.cell value, \code{buffer}
+distance will have no impact on the output.
 }
 \examples{
 \dontrun{
