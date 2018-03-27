@@ -11,7 +11,7 @@ nh_burn(spf, rast, orig.thresh = NULL, buffer = 0, ...)
 
 \item{rast}{input raster model output (values between 0 and 1)}
 
-\item{orig.thresh}{numeric between 0 and 1; threshold value to apply to raster}
+\item{orig.thresh}{numeric between 0 and 1; threshold value to apply to full raster}
 
 \item{buffer}{numeric; spatial buffer around spf to include in burn-in}
 
@@ -28,9 +28,11 @@ are assigned a value of 1 in the returned classified raster. See details
 for default calculation of \code{orig.thresh} and usage of \code{buffer}.
 }
 \details{
-A minimum cell value (min.cell) across all \code{spf} is calculated.
-If \code{orig.thresh} is NULL, the min.cell value will be used as a threshold
-for the full raster.
+When \code{buffer} is used or \code{orig.thresh} is not provided,
+a minimum cell value (min.cell) across all \code{spf} is calculated.
+The min.cell value will be used as a threshold
+for the full raster, or just areas within \code{buffer} distance of \code{spf},
+if \code{buffer} is greater than 0.
 
 If \code{buffer} is greater than 0 \code{orig.thresh} is not NULL, \code{orig.thresh}
 is used as the threshold for the full raster. Additionally,
