@@ -35,7 +35,7 @@ for the full raster.
 If \code{buffer} is greater than 0 \code{orig.thresh} is not NULL, \code{orig.thresh}
 is used as the threshold for the full raster. Additionally,
 cells within \code{buffer} distance of \code{spf} which are greater than min.cell
-are also set to 1. As a result, if a given \code{orig.thresh} is lower 
+are also set to 1. If a given \code{orig.thresh} is lower 
 than the calculated min.cell value, \code{buffer}
 distance will have no impact on the output.
 }
