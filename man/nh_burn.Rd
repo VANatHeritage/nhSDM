@@ -4,18 +4,21 @@
 \alias{nh_burn}
 \title{Add areas represented by features ('burn-in') to a binary raster SDM output}
 \usage{
-nh_burn(spf, rast, orig.thresh = NULL, buffer = 0, ...)
+nh_burn(spf, rast, orig.thresh = NULL, buffer = 0, return.thresh = FALSE,
+  ...)
 }
 \arguments{
 \item{spf}{input spatial features (sp or sf spatial object)}
 
 \item{rast}{input raster model output (values between 0 and 1)}
 
-\item{orig.thresh}{numeric between 0 and 1; threshold value to apply to full raster}
+\item{orig.thresh}{numeric between 0 and 1; 'global' threshold value to apply to raster}
 
 \item{buffer}{numeric; spatial buffer around spf to include in burn-in}
 
-\item{...}{additional parameters to \code{raster::writeRaster}}
+\item{return.thresh}{logical; whether to return thresholds along with raster in a list}
+
+\item{...}{Other arguments as to \code{raster::writeRaster}}
 }
 \value{
 RasterLayer
@@ -40,6 +43,10 @@ cells within \code{buffer} distance of \code{spf} which are greater than min.cel
 are also set to 1. If a given \code{orig.thresh} is lower 
 than the calculated min.cell value, \code{buffer}
 distance will have no impact on the output.
+
+\code{return.thresh = TRUE} will return a list with 3 named objects:
+\code{rast}, the output raster; \code{orig.thresh}, the global threshold
+(if used); \code{min.cell}, the minimum cell value threshold (if used).
 }
 \examples{
 \dontrun{

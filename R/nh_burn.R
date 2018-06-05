@@ -20,12 +20,17 @@
 #' are also set to 1. If a given \code{orig.thresh} is lower 
 #' than the calculated min.cell value, \code{buffer}
 #' distance will have no impact on the output.
+#' 
+#' \code{return.thresh = TRUE} will return a list with 3 named objects:
+#' \code{rast}, the output raster; \code{orig.thresh}, the global threshold
+#' (if used); \code{min.cell}, the minimum cell value threshold (if used).
 #'
 #' @param spf input spatial features (sp or sf spatial object)
 #' @param rast input raster model output (values between 0 and 1)
-#' @param orig.thresh numeric between 0 and 1; threshold value to apply to full raster
+#' @param orig.thresh numeric between 0 and 1; 'global' threshold value to apply to raster
 #' @param buffer numeric; spatial buffer around spf to include in burn-in
-#' @param ... additional parameters to \code{raster::writeRaster}
+#' @param return.thresh logical; whether to return thresholds along with raster in a list
+#' @param ... Other arguments as to \code{raster::writeRaster}
 #' 
 #' @return RasterLayer
 #' 
@@ -44,7 +49,7 @@
 #' class_burn <- nh_burn(spf, rast, 0.75, 250, filename = "model_classified.tif", datatype = "INT2U")
 #' }
 
-nh_burn <- function(spf, rast, orig.thresh = NULL, buffer = 0, ...) {
+nh_burn <- function(spf, rast, orig.thresh = NULL, buffer = 0, return.thresh = FALSE, ...) {
   
   if (!is.null(orig.thresh) && (orig.thresh > 1 | orig.thresh < 0)) stop("orig.thresh value must be between 0 and 1.")
   if (is.null(orig.thresh)) omiss <- TRUE else omiss <- FALSE
@@ -73,50 +78,76 @@ nh_burn <- function(spf, rast, orig.thresh = NULL, buffer = 0, ...) {
     rcl <- data.frame(from = c(NA, -1, orig.thresh-1e-10), to = c(NA, orig.thresh-1e-10, 1.1), becomes = c(NA,0,1)) # subtract very small number from threshold
     message("Reclassifying raster...")
     rast <- reclassify(rburn, rcl, ...)
-    return(rast)
+    if (!return.thresh) return(rast) else return(list(rast = rast, orig.thresh = orig.thresh, min.cell = NA))
   } else {
-    # other cases, calculated the minimum value within features
-    message("Calculating minimum value in features...")
-    mval <- min(unlist(extract(r1, spf)), na.rm = T)
-    message("Calculated minimum value threshold = ", mval)
-  }
-  
-  if (is.null(orig.thresh)) {
-    orig.thresh <- mval
-    # this continues with orig.thresh == mval. Buffer not used.
-  } else if (orig.thresh < mval) {
-    message("Original threshold is lower than minimum feature value. Reclassifying with original threshold...")
-    # return thresholded rast, no changes needed
-    # all areas covered by mval are already covered by orig.thresh
-    rcl <- data.frame(from = c(NA, -1, orig.thresh-1e-10), to = c(NA, orig.thresh-1e-10, 1.1), becomes = c(NA,0,1)) # subtract very small number from threshold
-    rast <- reclassify(rast, rcl, ...)
-    return(rast)
-  }
-  
-  # update within buffer
-  if (buffer > 0 & orig.thresh >= mval) {
-    message("Thresholding buffer areas using minimum feature value...")
-    spfb <- st_buffer(spf, buffer)
-    r3 <- rasterize(spfb, r2, field = 1, background = NA)
-    r2 <- sum(r2, r3, na.rm = T)
-    # find areas in buffer area above mval, set to 1
-    values(r2) <- ifelse(test = values(r1+r3) > (mval+1), yes = 1, no = NA)
-    # r2 is now areas of original features + buffer areas > mval
-    if (omiss) {
-      r2[is.na(r2)] <- 0
-      rast <- mask(extend(r2, rast, value = 0), rast)
-      return(rast)
+    if (is.null(orig.thresh)) {
+      orig.thresh <- NA
+      # other cases where orig.thresh not given, calculate the minimum value within features
+      message("Calculating minimum value in features...")
+      mval <- min(unlist(extract(r1, spf)), na.rm = T)
+      message("Calculated minimum value threshold = ", mval)
+    } else {
+      mval <- NA
     }
-    message("Burning in features...")
-    rburn <- max(rast, extend(r2,rast), na.rm = T)
-  } else {
-    rburn <- rast
   }
   
-  message("Reclassifying raster...")
-  # reclassify
-  rcl <- data.frame(from = c(NA, -1, orig.thresh-1e-10), to = c(NA, orig.thresh-1e-10, 1.1), becomes = c(NA,0,1)) # subtract very small number from threshold
-  rast <- reclassify(rburn, rcl, ...)
-  return(rast)
+  # set threshold to use
+  if(!omiss) tuse <- orig.thresh else tuse <- mval
+    
+  if (buffer > 0) {
+    message("Reclassifying buffer areas using threshold...")
+    spfb <- st_buffer(spf, buffer)
+    r3 <- rasterize(spfb, r2, field = 1, background = NA) # buffer area
+    r2 <- sum(r2, r3, na.rm = T) # features (2) + buffer area (1)
+    # find areas in buffer area above mval, set to 1
+    values(r2) <- ifelse(test = values(r1+r2) > (tuse+1), yes = 1, no = NA)
+    # r2 is now areas of original features + buffer areas > tuse
+    r2[is.na(r2)] <- 0
+    rast <- mask(extend(r2, rast, value = 0), rast, ...)
+    if (!return.thresh) return(rast) else return(list(rast = rast, orig.thresh = orig.thresh, min.cell = mval))
+  } else {
+    message("Reclassifying raster...")
+    # reclassify
+    rcl <- data.frame(from = c(NA, -1, tuse-1e-10), to = c(NA, tuse-1e-10, 1.1), becomes = c(NA,0,1)) # subtract very small number from threshold
+    rburn <- max(rast, extend(r2,rast), na.rm = T)
+    rast <- reclassify(rburn, rcl, ...)
+    if (!return.thresh) return(rast) else return(list(rast = rast, orig.thresh = orig.thresh, min.cell = mval))
+  }
+
+  # old code  
+  # if (orig.thresh < mval) {
+  #   message("Original threshold is lower than minimum feature value. Reclassifying with original threshold...")
+  #   # return thresholded rast, no changes needed
+  #   # all areas covered by mval are already covered by orig.thresh
+  #   rcl <- data.frame(from = c(NA, -1, orig.thresh-1e-10), to = c(NA, orig.thresh-1e-10, 1.1), becomes = c(NA,0,1)) # subtract very small number from threshold
+  #   rast <- reclassify(rast, rcl)
+  #   if (!return.thresh) return(rast) else return(list(rast = rast, orig.thresh = orig.thresh, min.cell = NA))
+  # }
+  # 
+  # # update within buffer
+  # if (buffer > 0 & orig.thresh >= mval) {
+  #   # message("Thresholding buffer areas using minimum feature value...")
+  #   spfb <- st_buffer(spf, buffer)
+  #   r3 <- rasterize(spfb, r2, field = 1, background = NA) # buffer area
+  #   r2 <- sum(r2, r3, na.rm = T) # features (2) + buffer area (1)
+  #   # find areas in buffer area above mval, set to 1
+  #   values(r2) <- ifelse(test = values(r1+r2) > (mval+1), yes = 1, no = NA)
+  #   # r2 is now areas of original features + buffer areas > mval
+  #   if (omiss) {
+  #     r2[is.na(r2)] <- 0
+  #     rast <- mask(extend(r2, rast, value = 0), rast)
+  #     if (!return.thresh) return(rast) else return(list(rast = rast, orig.thresh = NA, min.cell = mval))
+  #   }
+  #   message("Burning in features...")
+  #   rburn <- max(rast, extend(r2,rast), na.rm = T)
+  # } else {
+  #   rburn <- rast
+  # }
+  # 
+  # message("Reclassifying raster...")
+  # # reclassify
+  # rcl <- data.frame(from = c(NA, -1, orig.thresh-1e-10), to = c(NA, orig.thresh-1e-10, 1.1), becomes = c(NA,0,1)) # subtract very small number from threshold
+  # rast <- reclassify(rburn, rcl)
+  # if (!return.thresh) return(rast) else return(list(rast = rast, orig.thresh = orig.thresh, min.cell = mval))
   
 }
