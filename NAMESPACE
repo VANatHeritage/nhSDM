@@ -3,6 +3,7 @@
 export(nh_best)
 export(nh_burn)
 export(nh_group)
+export(nh_patchdrop)
 export(nh_sample)
 import(raster)
 import(sf)
