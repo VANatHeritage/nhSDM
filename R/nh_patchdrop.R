@@ -29,14 +29,15 @@
 #'
 #' @examples
 #' \dontrun{
-#' spf <- st_read("D:/SDM/Tobacco/inputs/species/ambymabe/polygon_data/ambymabe.shp")
-#' rast <- raster("E:/projects/SDM_ancilliary/Hypergrid/VA_methods/raster/screen_lpsh/thumb/ambymabe.tif")
+#' spf <- st_read("ambymabe/polygon_data/ambymabe.shp")
+#' rast <- raster("screen_lpsh/thumb/ambymabe.tif")
 #' 
 #' # use minimum patch size from presence features
-#' rast_contig_minpres <- nh_patchdrop(spf, rast, filename = "bla.tif", datatype = "INT2U")
+#' rast_contig_minpres <- nh_patchdrop(spf, rast)
 #' 
 #' # use a minimum patch size of 10000 (in units from 'rast')
-#' rast_contig_10km <- nh_patchdrop(rast = rast, min.patch = 10000, filename = "bla.tif", datatype = "INT2U")
+#' rast_contig_10km <- nh_patchdrop(rast = rast, min.patch = 10000,
+#'  filename = "bla.tif", datatype = "INT2U")
 #' }
 
 nh_patchdrop <- function(spf = NULL, rast, min.patch = NULL, directions = 8, ...) {
