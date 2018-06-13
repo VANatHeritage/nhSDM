@@ -2,18 +2,18 @@
 % Please edit documentation in R/nh_patchdrop.R
 \name{nh_patchdrop}
 \alias{nh_patchdrop}
-\title{Remove patches (contiguous cells representing habitat area) smaller than a given patch size from thresholded SDM output}
+\title{Remove contiguous patches smaller than a given patch size from binary output}
 \usage{
 nh_patchdrop(spf = NULL, rast, min.patch = NULL, directions = 8, ...)
 }
 \arguments{
 \item{spf}{input spatial features (sp or sf spatial object)}
 
-\item{rast}{input binary raster output (values either 0 or 1)}
+\item{rast}{input binary raster output (values either NA/0 or 1)}
 
 \item{min.patch}{area of minimum patch size, in area units used in \code{rast}}
 
-\item{directions}{Integer. Which cells are considered adjacent? Should be 8 (default; Queen's case) or 4 (Rook's case)}
+\item{directions}{Integer. Which cells are considered adjacent? Should be 8 (default; Queen's case) or 4 (Rook's case). From \code{raster::clump}}
 
 \item{...}{Other arguments as to \code{raster::writeRaster}}
 }
@@ -41,7 +41,7 @@ rast_contig_minpres <- nh_patchdrop(spf, rast)
 
 # use a minimum patch size of 10000 (in units from 'rast')
 rast_contig_10km <- nh_patchdrop(rast = rast, min.patch = 10000,
- filename = "bla.tif", datatype = "INT2U")
+ filename = "rast_contig_10km.tif", datatype = "INT2U")
 }
 }
 \author{

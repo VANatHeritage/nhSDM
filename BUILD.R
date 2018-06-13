@@ -1,3 +1,4 @@
+rm(list=ls())
 library(devtools)
 
 # use_build_ignore("BUILD.R")
@@ -6,7 +7,6 @@ library(devtools)
 document()
 install()
 check()
-
 
 ###
 build_pdf <- function() {

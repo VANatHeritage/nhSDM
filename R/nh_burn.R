@@ -69,7 +69,7 @@ nh_burn <- function(spf, rast, orig.thresh = NULL, buffer = 0, return.thresh = F
   r1 <- crop(rast, extent(extent(spf)[1]-(csz+buffer), extent(spf)[2]+(csz+buffer), extent(spf)[3]-(csz+buffer), extent(spf)[4]+(csz+buffer)))
   # update area within features
   message("Updating feature intersection areas...")
-  r2 <- rasterize(spf, r1, field = 1) # sets = 1 areas within original features
+  r2 <- gRasterize(spf, r1, value = 1) # sets = 1 areas within original features
   
   if (buffer == 0 & !is.null(orig.thresh)) {
     # case when buffer is 0 and threshold is given - simple burn in
@@ -97,7 +97,7 @@ nh_burn <- function(spf, rast, orig.thresh = NULL, buffer = 0, return.thresh = F
   if (buffer > 0) {
     message("Reclassifying buffer areas using threshold...")
     spfb <- st_buffer(spf, buffer)
-    r3 <- rasterize(spfb, r2, field = 1, background = NA) # buffer area
+    r3 <- gRasterize(spfb, r2, value = 1, background = NA) # buffer area
     r2 <- sum(r2, r3, na.rm = T) # features (2) + buffer area (1)
     # find areas in buffer area above mval, set to 1
     values(r2) <- ifelse(test = values(r1+r2) > (tuse+1), yes = 1, no = NA)

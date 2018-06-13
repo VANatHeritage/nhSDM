@@ -1,6 +1,6 @@
 # nh_patchdrop
 
-#' Remove patches (contiguous cells representing habitat area) smaller than a given patch size from thresholded SDM output
+#' Remove contiguous patches smaller than a given patch size from binary output
 #' 
 #' Takes a binary/thresholded raster (values either NA, 0, or 1), and 
 #' returns a binary raster. Clumps of contiguous cells with the value (1) are
@@ -12,9 +12,9 @@
 #' not given, a 'min.patch' value must be given, in units of the input raster.
 #'
 #' @param spf input spatial features (sp or sf spatial object)
-#' @param rast input binary raster output (values either 0 or 1)
+#' @param rast input binary raster output (values either NA/0 or 1)
 #' @param min.patch area of minimum patch size, in area units used in \code{rast}
-#' @param directions Integer. Which cells are considered adjacent? Should be 8 (default; Queen's case) or 4 (Rook's case)
+#' @param directions Integer. Which cells are considered adjacent? Should be 8 (default; Queen's case) or 4 (Rook's case). From \code{raster::clump}
 #' @param ... Other arguments as to \code{raster::writeRaster}
 #' 
 #' @return RasterLayer
@@ -37,7 +37,7 @@
 #' 
 #' # use a minimum patch size of 10000 (in units from 'rast')
 #' rast_contig_10km <- nh_patchdrop(rast = rast, min.patch = 10000,
-#'  filename = "bla.tif", datatype = "INT2U")
+#'  filename = "rast_contig_10km.tif", datatype = "INT2U")
 #' }
 
 nh_patchdrop <- function(spf = NULL, rast, min.patch = NULL, directions = 8, ...) {
@@ -69,7 +69,7 @@ nh_patchdrop <- function(spf = NULL, rast, min.patch = NULL, directions = 8, ...
   # new value for excluded patches
   if (0 %in% unique(rast)) upd <- 0 else upd <- NA
   
-  # run clump (extend to break grouping from one x edge to another)
+  # run clump (extend to break grouping from one x-edge to another)
   r2 <- crop(clump(extend(rast, y=c(1,1)), directions = directions), rast)
 
   # figure out what to drop
