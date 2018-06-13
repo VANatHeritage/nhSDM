@@ -37,16 +37,15 @@ The min.cell value will be used as a threshold
 for the full raster, or just areas within \code{buffer} distance of \code{spf},
 if \code{buffer} is greater than 0.
 
-If \code{buffer} is greater than 0 \code{orig.thresh} is not NULL, \code{orig.thresh}
+If \code{buffer} is greater than 0 and \code{orig.thresh} is not NULL, \code{orig.thresh}
 is used as the threshold for the full raster. Additionally,
-cells within \code{buffer} distance of \code{spf} which are greater than min.cell
-are also set to 1. If a given \code{orig.thresh} is lower 
-than the calculated min.cell value, \code{buffer}
-distance will have no impact on the output.
+cells within \code{buffer} distance of \code{spf} which are greater than the
+calculated min.cell value are also set to 1. If a given \code{orig.thresh} is lower 
+than the calculated min.cell value, \code{buffer} will have no impact on the output.
 
-\code{return.thresh = TRUE} will return a list with 3 named objects:
-\code{rast}, the output raster; \code{orig.thresh}, the global threshold
-(if used); \code{min.cell}, the minimum cell value threshold (if used).
+The default is to return the raster only. If \code{return.thresh = TRUE}, the function will
+return a list with 3 named objects: \code{rast}, the output raster; \code{orig.thresh}, 
+the global threshold (if used); \code{min.cell}, the minimum cell value threshold (if used).
 }
 \examples{
 \dontrun{

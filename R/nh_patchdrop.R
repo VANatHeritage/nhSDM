@@ -3,13 +3,14 @@
 #' Remove contiguous patches smaller than a given patch size from binary output
 #' 
 #' Takes a binary/thresholded raster (values either NA, 0, or 1), and 
-#' returns a binary raster. Clumps of contiguous cells with the value (1) are
-#' given a value of 0 (if 0 values are present in the input 'rast'); otherwise, they
+#' returns a binary raster. Clumps of contiguous cells with the value (1) 
+#' that are smaller than the \code{min.patch} size are given a value of 0 
+#' (if 0 values are present in the input 'rast'); otherwise, they
 #' are given an NA value.
 #' 
 #' If 'spf' is given, the smallest feature's area will be used to derive
-#' a 'min.patch' value, and any given 'min.patch' is ignored. If 'spf' is 
-#' not given, a 'min.patch' value must be given, in units of the input raster.
+#' a \code{min.patch} value, and any given 'min.patch' is ignored. If 'spf' is 
+#' not given, a 'min.patch' value must be given, in area units of the input raster.
 #'
 #' @param spf input spatial features (sp or sf spatial object)
 #' @param rast input binary raster output (values either NA/0 or 1)
