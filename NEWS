@@ -1,10 +1,14 @@
-nhSDM 0.0.1
+nhSDM 0.0.2
 =================
-2018-02-08
+2018-06-14
 
-** INITIAL RELEASE ON GITHUB **
+NEW FUNCTIONS
 
-* switched functions to use `sf` methods with `sp` support
+* `nh_patchdrop`: drop contiguous cell groups that are smaller
+than a given size threshold
+
+* `gRasterize`: internal function for spatial feature rasterizing. Now
+uses `gdalUtils::gdal_rasterize` making `nh_burn` reliant on a valid GDAL install.
 
 nhSDM 0.0.1-1
 =================
@@ -13,3 +17,11 @@ nhSDM 0.0.1-1
 * New functions `nh_burn`, `nh_best`
 
 * internal function script added.
+
+nhSDM 0.0.1
+=================
+2018-02-08
+
+** INITIAL RELEASE ON GITHUB **
+
+* switched functions to use `sf` methods with `sp` support
