@@ -105,11 +105,11 @@ nh_group <- function(spf, sep.dist = 0, union = FALSE) {
 
   if (union) {
     if (!"dplyr" %in% installed.packages()) {
-      message("Install 'dplyr' to enable union. Returning non-unioned features...")
-      break
+      message("Install package 'dplyr' to enable union. Returning non-unioned features...")
+    } else {
+      group <- NULL # just here to avoid check() notes (undefined global variable)
+      spf <- spf %>% dplyr::group_by(group) %>% dplyr::summarize(count = n())
     }
-    group<-NULL # just here to avoid check() notes (undefined global variable)
-    spf <- spf %>% dplyr::group_by(group) %>% dplyr::summarize(count = n())
   }
 
   if (sp) return(as(spf,Class = "Spatial")) else return(spf)
