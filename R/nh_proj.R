@@ -6,8 +6,8 @@
 #' new SDM project SQLite database. New project folder is 
 #' created in working directory, unless \code{folder} is specified.
 #' 
-#' @param proj.name The name of the project. Appended to a new project database file.
-#' @param folder The SDM folder in which to initiate the project. Defaults to `getwd()`.
+#' @param proj.name The name of the project. New folder created and name appended to a new project database file.
+#' @param folder The SDM folder in which to initiate the project
 #' 
 #' @return nothing
 #'
@@ -20,7 +20,7 @@
 #' @examples
 #' \dontrun{
 #' setwd("D:/testing_SDM")
-#' nh_proj("dum")
+#' nh_proj("new_proj")
 #' }
 
 nh_proj <- function(proj.name, folder = ".") {
@@ -47,7 +47,8 @@ nh_proj <- function(proj.name, folder = ".") {
     if (!dir.exists(paste0(s, "/" , i))) dir.create(paste0(s, "/" , i), recursive = T)
   }
   
-  sql <- paste(readLines("E:/git/nhSDM/data/sql/sqlite_template_db_nodata.sql"), collapse = "")
+  insert_file <- system.file("sql/sqlite_template_db_nodata.sql", package = "nhSDM")
+  sql <- paste(readLines(insert_file, encoding = "UTF-8"), collapse = "")
   sql <- paste(strsplit(sql, ";")[[1]], ";",sep = "")
   tryCatch(expr = {
       conn <- dbConnect(SQLite(), dbfile)

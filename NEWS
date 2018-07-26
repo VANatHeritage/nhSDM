@@ -1,8 +1,10 @@
 nhSDM 0.0.3
 =================
-2018-07-23
+2018-07-26
 
 NEW FUNCTIONS
+
+* `nh_proj`: create new SDM project with folder structure and database
 
 * `nh_stack`: stack binary SDM rasters into a single layer, indentifying
 unique assemblages
