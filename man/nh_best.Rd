@@ -4,17 +4,19 @@
 \alias{nh_best}
 \title{Extract areas with best (highest value) as polygons from an SDM prediction raster, with optional feature mask}
 \usage{
-nh_best(spf = NULL, rast, top.percent = NULL, min.size = NULL,
-  num.patches = NULL, rank.by = "area")
+nh_best(rast, spf = NULL, top.percent = NULL, min.size = NULL,
+  min.dist = NULL, num.patches = NULL, rank.by = "area")
 }
 \arguments{
-\item{spf}{input spatial features (sp or sf spatial object); will be erased from output}
-
 \item{rast}{input raster model output with continuous values}
+
+\item{spf}{input spatial features (sp or sf spatial object); if given, it can be used to modify areas selected from \code{rast}}
 
 \item{top.percent}{numeric; percent (e.g.; 0.01 = 0.01\%) of highest cell values in raster to extract}
 
 \item{min.size}{numeric; optional minimal area of an extracted polygon}
+
+\item{min.dist}{numeric; optional minimal distance from spf for patches. Default is 0 (can be adjacent to 'spf')}
 
 \item{num.patches}{numeric; optional number of patches to return, using rank.by criteria}
 
@@ -24,8 +26,8 @@ nh_best(spf = NULL, rast, top.percent = NULL, min.size = NULL,
 sp or sf object (polygons)
 }
 \description{
-If \code{spf} is given, areas of cells intersecting these features will not be included in the returned
-polygons.
+If \code{spf} is given, areas intersecting these features (plus a buffer, if \code{min.dist} is specified) 
+will not be included in the returned polygons.
 }
 \details{
 \code{top.percent} and \code{min.size} will both be derived from \code{spf} if they are null
@@ -41,9 +43,10 @@ For better performance, crop the raster prior to running, and/or use a very low
 }
 \examples{
 \dontrun{
-spf <- st_read("ambymabe/polygon_data/ambymabe.shp")
-rast <- raster("ambymabe/grids/ambymabe_20171018_130837.tif")
-best_polys <- nh_burn(spf, rast)
+spf <- sf::st_read("inputs/species/ambymabe/polygon_data/ambymabe.shp")
+rast <- raster::raster("outputs/ambymabe/grids/ambymabe_20171018_130837.tif")
+rast <- raster::crop(rast, spf)
+best_polys <- nh_best(rast, spf)
 }
 }
 \author{

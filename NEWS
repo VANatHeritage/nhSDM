@@ -1,3 +1,17 @@
+nhSDM 0.0.3-1
+=================
+2018-08-13
+
+BUG FIX
+
+* internal function gRasterize had issues with overlapping/adjacent polygons - used union 
+to combine them prior to writing to shapefile.
+
+GENERAL
+
+* `nh_best`: added argument `min.dist` to excludes areas from consideration within min.dist of 
+`spf`, when given. Also re-arranged argument order for this function.
+
 nhSDM 0.0.3
 =================
 2018-07-26

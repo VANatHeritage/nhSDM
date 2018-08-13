@@ -1,7 +1,7 @@
 Package: nhSDM
 Title: Tools for Natural Heritage SDMs
-Date: 2018-07-26
-Version: 0.0.3
+Date: 2018-08-13
+Version: 0.0.3-1
 Authors@R: person("David", "Bucklin", email = "david.bucklin@gmail.com", role = c("aut", "cre"))
 Description: Miscellaneous tools for working with Natural Heritage data in
   Species Distribution Modelling (SDM) workflows.

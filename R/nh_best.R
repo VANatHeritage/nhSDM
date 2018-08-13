@@ -2,8 +2,8 @@
 
 #' Extract areas with best (highest value) as polygons from an SDM prediction raster, with optional feature mask
 #' 
-#' If \code{spf} is given, areas of cells intersecting these features will not be included in the returned
-#' polygons. 
+#' If \code{spf} is given, areas intersecting these features (plus a buffer, if \code{min.dist} is specified) 
+#' will not be included in the returned polygons.
 #' 
 #' \code{top.percent} and \code{min.size} will both be derived from \code{spf} if they are null
 #' and \code{spf} is given. In this case, \code{top.percent} will be set to be equal to \code{spf}'s cell coverage 
@@ -16,10 +16,11 @@
 #' For better performance, crop the raster prior to running, and/or use a very low 
 #' \code{top.percent} value, to return a smaller proportion of the cells as polygons.
 #' 
-#' @param spf input spatial features (sp or sf spatial object); will be erased from output
 #' @param rast input raster model output with continuous values
+#' @param spf input spatial features (sp or sf spatial object); if given, it can be used to modify areas selected from \code{rast}
 #' @param top.percent numeric; percent (e.g.; 0.01 = 0.01\%) of highest cell values in raster to extract
 #' @param min.size numeric; optional minimal area of an extracted polygon
+#' @param min.dist numeric; optional minimal distance from spf for patches. Default is 0 (can be adjacent to 'spf')
 #' @param num.patches numeric; optional number of patches to return, using rank.by criteria
 #' @param rank.by character; used for ranking patches when num.patches is not null; either 'area' (default) or 'value'
 #' 
@@ -35,12 +36,13 @@
 #'
 #' @examples
 #' \dontrun{
-#' spf <- st_read("ambymabe/polygon_data/ambymabe.shp")
-#' rast <- raster("ambymabe/grids/ambymabe_20171018_130837.tif")
-#' best_polys <- nh_burn(spf, rast)
+#' spf <- sf::st_read("inputs/species/ambymabe/polygon_data/ambymabe.shp")
+#' rast <- raster::raster("outputs/ambymabe/grids/ambymabe_20171018_130837.tif")
+#' rast <- raster::crop(rast, spf)
+#' best_polys <- nh_best(rast, spf)
 #' }
 
-nh_best <- function(spf = NULL, rast, top.percent = NULL, min.size = NULL, num.patches = NULL, rank.by = 'area') {
+nh_best <- function(rast, spf = NULL, top.percent = NULL, min.size = NULL, min.dist = NULL, num.patches = NULL, rank.by = 'area') {
   
   if (!rank.by %in% c("area","value")) {
     stop("rank.by must be either 'area' or 'value'.")
@@ -53,8 +55,15 @@ nh_best <- function(spf = NULL, rast, top.percent = NULL, min.size = NULL, num.p
     spf <- spf1[[2]]
     rm(spf1)
     
-    r <- mask(rast, as(spf, "Spatial"), inverse = TRUE)
+    message("Removing areas covered by 'spf'...")
+    if (!is.null(min.dist)) {
+      spf.buff <- st_buffer(spf, min.dist)
+      r <- mask(rast, as(spf.buff, "Spatial"), inverse = TRUE)
+    } else {
+      r <- mask(rast, as(spf, "Spatial"), inverse = TRUE)
+    }
   } else {
+    if (!is.null(min.dist)) message("Ignoring 'min.dist', as 'spf' is not specified.")
     r <- rast
   }
   
@@ -78,13 +87,13 @@ nh_best <- function(spf = NULL, rast, top.percent = NULL, min.size = NULL, num.p
       top.percent <- 0.01
     }
   }
-  message("Using top.percent value of [", top.percent * 100, "%].")
+  message("Using top.percent value of [", round(top.percent * 100, 3), " %].")
   
   # use smallest patch size from spf as min.size
   if (is.null(min.size) & !is.null(spf)) {
     min.size <- as.numeric(min(st_area(spf)))
-    message ("Using min.size of [", min.size, "] (smallest feature area).")
   }
+  message("Using min.size of [", min.size, "].")
   
   # calc cutoff value
   best <- quantile(vals, 1-top.percent, na.rm = T)[1]
@@ -127,5 +136,5 @@ nh_best <- function(spf = NULL, rast, top.percent = NULL, min.size = NULL, num.p
     }
   }
   
-  if (sp) return(as(spf.out,Class = "Spatial")) else return(spf.out)
+  if (!is.null(spf) && sp) return(as(spf.out,Class = "Spatial")) else return(spf.out)
 }

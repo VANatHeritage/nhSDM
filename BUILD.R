@@ -1,3 +1,4 @@
+setwd("E:/git/nhSDM")
 rm(list=ls())
 library(devtools)
 
