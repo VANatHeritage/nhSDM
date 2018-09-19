@@ -38,10 +38,8 @@ nh_proj <- function(proj.name, folder = ".") {
   
   folders <- c("databases", "env_vars/background", "env_vars/raster", "env_vars/tabular",
                "other_spatial/raster", "other_spatial/feature",
-               "species/_template_copyme/inputs/background", "species/_template_copyme/inputs/presence",
-               "species/_template_copyme/inputs/scripts","species/_template_copyme/inputs/model_input",
-               "species/_template_copyme/outputs/rdata", "species/_template_copyme/outputs/metadata", 
-               "species/_template_copyme/outputs/model_predictions")
+               "species/_template/inputs/presence", "species/_template/inputs/scripts","species/_template/inputs/model_input",
+               "species/_template/outputs/rdata", "species/_template/outputs/metadata", "species/_template/outputs/model_predictions")
   
   for (i in folders) {
     if (!dir.exists(paste0(s, "/" , i))) dir.create(paste0(s, "/" , i), recursive = T)

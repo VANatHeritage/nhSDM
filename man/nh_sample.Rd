@@ -4,7 +4,8 @@
 \alias{nh_sample}
 \title{Create points in features in reference raster cells}
 \usage{
-nh_sample(spf, rast, num.samps = NULL, replace = FALSE, force.min = FALSE)
+nh_sample(spf, rast, num.samps = NULL, replace = FALSE,
+  force.min = FALSE)
 }
 \arguments{
 \item{spf}{input spatial features (sp or sf spatial object)}

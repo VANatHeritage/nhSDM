@@ -69,7 +69,7 @@ gRasterize <- function(spf, rast, value = 1, background = NA) {
   
   # handle sp/sf class
   spf <- tospf(spf, rast)[[2]]
-  spf <- st_union(spf)
+  try(spf <- st_union(spf), silent = T)
   # temp names
   tmp <- gsub(".grd", "", rasterTmpFile())
   tmpr <- paste0(tmp, ".tif")

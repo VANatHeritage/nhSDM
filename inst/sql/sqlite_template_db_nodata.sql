@@ -1,4 +1,5 @@
 CREATE TABLE "tblPrepStats" (
+   `tableCode` TEXT,
 	`SciName`	TEXT,
 	`CommName`	TEXT,
 	`ElemCode`	TEXT,
@@ -6,12 +7,13 @@ CREATE TABLE "tblPrepStats" (
 	`date`	TEXT,
 	`time`	TEXT,
 	`Loc_Use`	TEXT,
-	PRIMARY KEY(`ElemCode`,`date`,`time`),
+   PRIMARY KEY(`tableCode`),
 	FOREIGN KEY(`ElemCode`) REFERENCES `lkpSpecies`(`CODE`)
 );
-CREATE TABLE `tblModelRuns` (
+CREATE TABLE "tblModelRuns" (
 	`modelRunName`	TEXT,
 	`CODE`	TEXT REFERENCES lkpSpecies(CODE),
+   `tableCode` TEXT REFERENCES tblPrepStats(tableCode),
 	`modelBeginTime` TEXT,
 	`modelEndTime` TEXT,
 	`modeller` TEXT,
@@ -32,7 +34,7 @@ CREATE TABLE "tblCutoffs" (
 	`capturedPts`	INTEGER,
 	primary key (`modelRunName`,`cutCode`)
 );
-CREATE TABLE `tblCustomModelComments` (
+CREATE TABLE "tblCustomModelComments" (
 	`ID`	INTEGER,
 	`date`	TEXT,
 	`speciesCode`	TEXT,
@@ -86,7 +88,7 @@ CREATE TABLE "lkpSpecies" (
 	FOREIGN KEY(`MODTYPE`) REFERENCES `lkpModtype`(`MODTYPE`),
 	FOREIGN KEY(`ModelerID`) REFERENCES `lkpModelers`(`ModelerID`)
 );
-CREATE TABLE lkpModtype (
+CREATE TABLE "lkpModtype" (
 	MODTYPE CHARACTER(1) primary key,
 	MODTYPE_desc text
 );
@@ -98,7 +100,7 @@ CREATE TABLE "lkpModelers" (
 	`State`	TEXT,
 	PRIMARY KEY(`ModelerID`)
 );
-CREATE TABLE `lkpEnvVarsAqua` (
+CREATE TABLE "lkpEnvVarsAqua" (
   `fullName` TEXT,
   `gridName` TEXT,
   `description` TEXT,
@@ -134,3 +136,17 @@ CREATE TABLE "lkpDataSources" (
 	`DataSourcesCode`	TEXT,
 	PRIMARY KEY(`DataSourcesID`)
 );
+CREATE TABLE "tblVarsUsed" (
+	`modelRunName`	TEXT REFERENCES tblModelRuns(`modelRunName`),
+   `gridName` TEXT,
+   `inFinalModel` INTEGER,
+   `impVal` REAL
+);
+CREATE VIEW "latestModelRun" AS SELECT a.modelRunName modelRunName, a.CODE species_code, a.ct total_model_runs, b.COMMONNAME common_name, modelEndTime 
+   FROM 
+   (SELECT * FROM (SELECT CODE, count(CODE) ct, 
+   max(modelEndTime) as modelEndTime from tblModelRuns group by CODE) 
+   JOIN tblModelRuns USING (CODE, modelEndTime)) a,
+   lkpSpecies b WHERE a.CODE = b.CODE
+   order by modelEndTime desc
+;
