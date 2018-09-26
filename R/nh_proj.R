@@ -7,7 +7,7 @@
 #' created in working directory, unless \code{folder} is specified.
 #' 
 #' @param proj.name The name of the project. New folder created and name appended to a new project database file.
-#' @param folder The SDM folder in which to initiate the project
+#' @param folder The folder in which to initiate the project
 #' 
 #' @return nothing
 #'

@@ -9,7 +9,7 @@ nh_proj(proj.name, folder = ".")
 \arguments{
 \item{proj.name}{The name of the project. New folder created and name appended to a new project database file.}
 
-\item{folder}{The SDM folder in which to initiate the project}
+\item{folder}{The folder in which to initiate the project}
 }
 \value{
 nothing

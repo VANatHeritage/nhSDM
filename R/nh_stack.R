@@ -1,6 +1,6 @@
 # nh_stack
 
-#' Stack multiple binary SDM rasters into one raster layer.
+#' Stack multiple binary SDM rasters into one raster layer
 #' 
 #' Takes a \code{rastfiles} of binary raster's filenames (values 0/1), 
 #' a template raster covering the extent desired for the stack, 

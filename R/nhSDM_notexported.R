@@ -2,7 +2,7 @@
 
 # tospf
 #'
-#' Return a list with sp-flag and sf object, given either sf or sp object
+#' Return a list with sp-flag and standardized sf object, given either sf or sp object
 #' 
 #' @param spf input sf or sp object
 #' @param rastproj raster dataset with desired output projection
@@ -21,10 +21,10 @@ tospf <- function(spf, rastproj) {
     spf <- st_as_sf(spf)
   } else if (grepl("sf", class(spf)[1])) {
     sp <- FALSE
-    names(spf)[length(names(spf))] <- "geometry"
   } else {
     stop("Must provide either 'sp' or 'sf'-class spatial object.")
   }
+  spf$geometry <- st_geometry(spf) # to fix geom column name
   spf <- st_zm(spf)
   
   # transform if necessary

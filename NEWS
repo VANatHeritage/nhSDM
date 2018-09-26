@@ -1,3 +1,9 @@
+nhSDM 0.0.4
+
+NEW FUNCTION
+
+* `nh_rasterize`: convert vector SDM predictions to raster, with optional buffer
+
 nhSDM 0.0.3-1
 =================
 2018-08-13

@@ -2,7 +2,7 @@
 % Please edit documentation in R/nh_stack.R
 \name{nh_stack}
 \alias{nh_stack}
-\title{Stack multiple binary SDM rasters into one raster layer.}
+\title{Stack multiple binary SDM rasters into one raster layer}
 \usage{
 nh_stack(rastfiles, rast, codes = NULL, return.table = FALSE)
 }

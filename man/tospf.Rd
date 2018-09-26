@@ -2,7 +2,7 @@
 % Please edit documentation in R/nhSDM_notexported.R
 \name{tospf}
 \alias{tospf}
-\title{Return a list with sp-flag and sf object, given either sf or sp object}
+\title{Return a list with sp-flag and standardized sf object, given either sf or sp object}
 \usage{
 tospf(spf, rastproj)
 }
@@ -15,6 +15,6 @@ tospf(spf, rastproj)
 sf object
 }
 \description{
-Return a list with sp-flag and sf object, given either sf or sp object
+Return a list with sp-flag and standardized sf object, given either sf or sp object
 }
 \keyword{internal}
