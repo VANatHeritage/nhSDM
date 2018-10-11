@@ -1,5 +1,13 @@
-nhSDM 0.0.4
+nhSDM 0.0.4-1
+================
+2018-10-11
 
+GENERAL CHANGES
+
+* `sf` and `raster` to Depends
+
+nhSDM 0.0.4
+================
 NEW FUNCTION
 
 * `nh_rasterize`: convert vector SDM predictions to raster, with optional buffer

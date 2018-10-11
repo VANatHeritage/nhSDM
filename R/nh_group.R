@@ -44,8 +44,6 @@
 
 nh_group <- function(spf, sep.dist = 0, union = FALSE) {
 
-  # make sure spdf
-
   # handle name conflicts...
   # dt <- gsub("\\s|:|-", "", as.character(Sys.time()))
   #  if ("group" %in% names(spf))
@@ -55,9 +53,9 @@ nh_group <- function(spf, sep.dist = 0, union = FALSE) {
   sp <- spf1[[1]]
   spf <- spf1[[2]]
   rm(spf1)
-
-  row.names(spf) <- 1:length(spf$geometry)
-  spf$TEMPRN <- row.names(spf)
+  
+  # seq for joining later
+  spf$TEMPRNZZ <- 1:length(spf$geometry)
 
   if (isTRUE(st_is_longlat(spf))) {
       if (!"lwgeom" %in% installed.packages()) stop("Need to install package 'lwgeom' for lat/lon distance calculations.")
@@ -99,9 +97,9 @@ nh_group <- function(spf, sep.dist = 0, union = FALSE) {
     grps[subg] <- n
   }
 
-  polyg <- data.frame(TEMPRN = names(grps), group = as.numeric(unlist(grps)))
-  spf <-merge(spf, polyg, by = "TEMPRN")
-  spf$TEMPRN <- NULL
+  polyg <- data.frame(TEMPRNZZ = names(grps), group = as.numeric(unlist(grps)))
+  spf <-merge(spf, polyg, by = "TEMPRNZZ")
+  spf$TEMPRNZZ <- NULL
 
   if (union) {
     if (!"dplyr" %in% installed.packages()) {
