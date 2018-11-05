@@ -103,7 +103,10 @@ nh_sample <- function(spf, rast, num.samps = NULL, replace = FALSE, force.min = 
     }
     if (!exists("a2s")) next
     # pts <- gPointOnSurface(a2s, byid = TRUE, id = row.names(a2s))
-    pts <- st_centroid(a2s) #not sure about weird polygon cetroids...
+    # score
+    if (all(st_geometry_type(a2s) == "LINESTRING")) a2s$score <- as.numeric(st_length(a2s)) else
+      a2s$score <- as.numeric(st_area(a2s))
+    suppressWarnings(pts <- st_centroid(a2s)) #not sure about weird polygon cetroids...
 
     if (is.null(num.samps)) {
       pts.s <- pts
@@ -113,7 +116,7 @@ nh_sample <- function(spf, rast, num.samps = NULL, replace = FALSE, force.min = 
       if (!replace) {
         o.ns <- ns
         if (ns > length(pts$geometry)) ns <- length(pts$geometry) # case of more samples than available
-        pts.s <- pts[row.names(pts) %in% sample(row.names(pts), size = ns, prob = as.numeric(st_area(a2s)), replace = FALSE),]
+        pts.s <- pts[row.names(pts) %in% sample(row.names(pts), size = ns, prob = a2s$score, replace = FALSE),]
         if (length(pts.s$geometry) < o.ns & force.min) {
           pts.o <- pts.s
           samp.rm <- sample(1:length(pts.s$geometry))
@@ -122,7 +125,7 @@ nh_sample <- function(spf, rast, num.samps = NULL, replace = FALSE, force.min = 
           if (length(pts.s$geometry) != o.ns) pts.s <- pts.s[!row.names(pts.s) %in% samp.rm[1:(length(pts.s$geometry)-o.ns)],]
         }
       } else {
-        pts.s <- pts[c(sample(row.names(pts), size = ns, prob = st_area(a2s), replace = TRUE)),]
+        pts.s <- pts[c(sample(row.names(pts), size = ns, prob = pts$score , replace = TRUE)),]
       }
       row.names(pts.s) <- 1:length(pts.s$geometry)
     }

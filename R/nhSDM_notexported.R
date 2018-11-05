@@ -81,7 +81,7 @@ gRasterize <- function(spf, rast, value = 1, background = NA) {
     # gdal rasterize the mask area (fixed paths, just overwrites layer each time)
     writeRaster(rast, tmpr, datatype = "INT2U")
     st_write(obj = spf, dsn = tmpshp, driver = "ESRI Shapefile", quiet = T)
-    gdal_rasterize(tmpshp, dst_filename = tmpr, burn = value)
+    gdalUtils::gdal_rasterize(tmpshp, dst_filename = tmpr, burn = value)
     r1 <- raster(tmpr)
     values(rast) <- values(r1)
     names(rast) <- "gRasterize"

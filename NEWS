@@ -1,10 +1,14 @@
 nhSDM 0.0.4-1
 ================
-2018-10-11
+2018-11-05
 
 GENERAL CHANGES
 
 * `sf` and `raster` to Depends
+
+BUG FIXES
+
+* `nh_sample`: Fixed bug with LINESTRING geometries; uses st_length as probability for sampling. 
 
 nhSDM 0.0.4
 ================
