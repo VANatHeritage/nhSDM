@@ -4,7 +4,7 @@
 \alias{nh_stack}
 \title{Stack multiple binary SDM rasters into one raster layer}
 \usage{
-nh_stack(rastfiles, rast, codes = NULL, return.table = FALSE)
+nh_stack(rastfiles, rast, codes = NULL, return.table = TRUE)
 }
 \arguments{
 \item{rastfiles}{raster file names; character vector}
@@ -44,7 +44,8 @@ of all raster extents.
 
 When \code{return.table} is TRUE, a list with two objects (1), the 
 stack raster, and (2) a summary table of included rasters is returned (with
-internal nh_stack unique values, species codes, and file names).
+internal nh_stack unique values, species codes, and file names). This table
+is required for resampling the stack (i.e. with \code{nh_stack_resample}).
 }
 \examples{
 \dontrun{

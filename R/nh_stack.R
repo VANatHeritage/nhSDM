@@ -26,7 +26,8 @@
 #' 
 #' When \code{return.table} is TRUE, a list with two objects (1), the 
 #' stack raster, and (2) a summary table of included rasters is returned (with
-#' internal nh_stack unique values, species codes, and file names).
+#' internal nh_stack unique values, species codes, and file names). This table
+#' is required for resampling the stack (i.e. with \code{nh_stack_resample}).
 #' 
 #' @param rastfiles raster file names; character vector
 #' @param rast raster template dataset
@@ -52,7 +53,7 @@
 #' levels(stack)[[1]]
 #' }
 
-nh_stack <- function(rastfiles, rast, codes = NULL, return.table = FALSE) {
+nh_stack <- function(rastfiles, rast, codes = NULL, return.table = TRUE) {
   
   list <- rastfiles
   if (!is.null(codes) & length(codes) != length(list)) stop("`codes` length must match `rastfiles` length.")
@@ -128,4 +129,106 @@ nh_stack <- function(rastfiles, rast, codes = NULL, return.table = FALSE) {
   } else {
     return(r2)
   }
+}
+
+
+# nh_stack_resample
+
+#' Resample a raster from nh_stack to a lower (coarser) resolution
+#' 
+#' Takes an output raster from nh_stack, and returns a lower-resolution
+#' version, with recalculated species assemblages for the larger cells.
+#' New values are "aggregated" by \code{fact}, the number of cells
+#' to aggregate in the x/y dimensions (see \code{?raster::aggregate}).
+#' 
+#' @param rast raster output from nh_stack
+#' @param lookup lookup table from nh_stack
+#' @param fact aggregation factor, in number of cells (see \code{?raster::aggregate})
+#' 
+#' @return RasterLayer
+#' 
+#' @author David Bucklin
+#'
+#' @import raster
+#' @importFrom stringi stri_rand_strings stri_length stri_sub
+#' @export
+#'
+#' @examples
+#' \dontrun{
+#' stack <- nh_stack(list, rast, return.table = TRUE)
+#' 
+#' # resample from 30m to 990m (i.e. ~1km) resolution
+#' stack1km <- nh_stack_resample(stack[[1]], stack[[2]], fact = 33)
+#' 
+#' # view species count raster
+#' ct <- deratify(r2, att = "ALLCODES_CT")
+#' plot(ct)
+#' }
+
+nh_stack_resample <- function(rast, lookup, fact = 10) {
+  
+  # find new res
+  if (all(fact < 2)) {
+    stop("'fact' must be a one or two-length integer greater than 1.")
+  } else {
+    a.fact <- round(fact)
+  }
+  
+  # split length
+  len <- unique(nchar(lookup$nh_stack_uval))
+  # get levels
+  lev <- levels(rast)[[1]]
+  
+  # aggregate
+  message("Aggregating stack...")
+  vals <- c()
+  # r1 <- NULL
+  # try({
+  r1 <- aggregate(rast, fact = a.fact, 
+                  fun = function(x, ...) {
+                    uv <- unique(x)
+                    if (all(is.na(uv))) {
+                      sp <- NA
+                    } else {
+                      uv <- uv[!is.na(uv)]
+                      cats <- paste(lev$category[lev$ID %in% uv], collapse = "")
+                      if (cats != "") {
+                        sp <- unique(stri_sub(cats, seq(1, stri_length(cats),by = len), length = len))
+                        sp <- paste(sp, collapse = "")
+                      } else {
+                        sp <- ""
+                      }
+                    }
+                    vals <<- c(vals, sp)
+                    # return(as.factor(sp)) # gets a cryptic error with larger rasters...
+                    # if worked, could just return as factor and not need to set values in next step
+                    return(1)
+                  }, expand = TRUE)
+  values(r1) <- as.factor(vals)
+  # }, silent = TRUE)
+  # if (is.null(r1)) {
+  #   message("backup...")
+  #   r1 <- aggregate(rast, fact = a.fact, fun = function(x,...) return(1), expand = TRUE)
+  #   values(r1) <- as.factor(vals)
+  # }
+  
+  # get levels
+  uvals <- levels(r1)[[1]]
+  
+  # species lookup
+  stk_order <- lookup
+  # parse
+  pars <- lapply(uvals$VALUE, 
+                 function(x) if (stri_length(x) > len) stri_sub(x, from = seq(1, stri_length(x), by = len), length = len) else x)
+  parssp <- unlist(lapply(pars, function(x) paste(stk_order$CODE[stk_order$nh_stack_uval %in% x], collapse = ";")))
+  parsct <- unlist(lapply(pars, length))
+  
+  uvals$ALLCODES <- parssp
+  uvals$ALLCODES_CT <- parsct
+  uvals$ALLCODES_CT[uvals$VALUE == ""] <- 0
+  
+  levels(r1) <- uvals
+  names(r1) <- "nh_stack_resample"
+  
+  return(r1)
 }
