@@ -141,9 +141,18 @@ nh_stack <- function(rastfiles, rast, codes = NULL, return.table = TRUE) {
 #' New values are "aggregated" by \code{fact}, the number of cells
 #' to aggregate in the x/y dimensions (see \code{?raster::aggregate}).
 #' 
+#' You can also provide polygons (sp or sf-class) to \code{spf}, over which
+#' to aggregate species assemblages. The polygons intersecting areas with
+#' data in \code{rast} are returned, with columns identifying species codes 
+#' and counts. This method will fail with large rasters (see \code{raster::zonal}),
+#' in which case processing using a tiling approach may be necessary. Polygons
+#' will be returned in the original projection, but processing internally
+#' is done in the raster's projection.
+#' 
 #' @param rast raster output from nh_stack
 #' @param lookup lookup table from nh_stack
 #' @param fact aggregation factor, in number of cells (see \code{?raster::aggregate})
+#' @param spf Optional vector spatial features to use for aggregation (sp or sf class polygons). If supplied, \code{fact} will be ignored
 #' 
 #' @return RasterLayer
 #' 
@@ -157,7 +166,7 @@ nh_stack <- function(rastfiles, rast, codes = NULL, return.table = TRUE) {
 #' \dontrun{
 #' stack <- nh_stack(list, rast, return.table = TRUE)
 #' 
-#' # resample from 30m to 990m (i.e. ~1km) resolution
+#' # resample from 30m to 990m (~1km) resolution
 #' stack1km <- nh_stack_resample(stack[[1]], stack[[2]], fact = 33)
 #' 
 #' # view species count raster
@@ -165,14 +174,7 @@ nh_stack <- function(rastfiles, rast, codes = NULL, return.table = TRUE) {
 #' plot(ct)
 #' }
 
-nh_stack_resample <- function(rast, lookup, fact = 10) {
-  
-  # find new res
-  if (all(fact < 2)) {
-    stop("'fact' must be a one or two-length integer greater than 1.")
-  } else {
-    a.fact <- round(fact)
-  }
+nh_stack_resample <- function(rast, lookup, fact = 10, spf = NULL) {
   
   # split length
   len <- unique(nchar(lookup$nh_stack_uval))
@@ -180,40 +182,81 @@ nh_stack_resample <- function(rast, lookup, fact = 10) {
   lev <- levels(rast)[[1]]
   
   # aggregate
-  message("Aggregating stack...")
   vals <- c()
-  # r1 <- NULL
-  # try({
-  r1 <- aggregate(rast, fact = a.fact, 
-                  fun = function(x, ...) {
-                    uv <- unique(x)
-                    if (all(is.na(uv))) {
-                      sp <- NA
-                    } else {
-                      uv <- uv[!is.na(uv)]
-                      cats <- paste(lev$category[lev$ID %in% uv], collapse = "")
-                      if (cats != "") {
-                        sp <- unique(stri_sub(cats, seq(1, stri_length(cats),by = len), length = len))
-                        sp <- paste(sp, collapse = "")
+
+  if (is.null(spf)) {
+    # check fact
+    if (all(fact < 2)) {
+      stop("'fact' must be a one or two-length integer greater than 1.")
+    } else {
+      a.fact <- round(fact)
+    }
+    
+    message("Aggregating stack...")
+    r1 <- aggregate(rast, fact = a.fact, 
+                    fun = function(x, ...) {
+                      uv <- unique(x)
+                      if (all(is.na(uv))) {
+                        sp <- NA
                       } else {
-                        sp <- ""
+                        uv <- uv[!is.na(uv)]
+                        cats <- paste(lev$category[lev$ID %in% uv], collapse = "")
+                        if (cats != "") {
+                          sp <- unique(stri_sub(cats, seq(1, stri_length(cats),by = len), length = len))
+                          sp <- paste(sp, collapse = "")
+                        } else {
+                          sp <- ""
+                        }
                       }
-                    }
-                    vals <<- c(vals, sp)
-                    # return(as.factor(sp)) # gets a cryptic error with larger rasters...
-                    # if worked, could just return as factor and not need to set values in next step
-                    return(1)
-                  }, expand = TRUE)
-  values(r1) <- as.factor(vals)
-  # }, silent = TRUE)
-  # if (is.null(r1)) {
-  #   message("backup...")
-  #   r1 <- aggregate(rast, fact = a.fact, fun = function(x,...) return(1), expand = TRUE)
-  #   values(r1) <- as.factor(vals)
-  # }
+                      vals <<- c(vals, sp)
+                      # return(as.factor(sp)) # gets a cryptic error with larger rasters...
+                      # if this worked, could just return as factor and not need to set values in next step, but speed is essentially the same
+                      return(1)
+                    }, expand = TRUE)
+    values(r1) <- as.factor(vals)
+    
+    # get levels
+    uvals <- levels(r1)[[1]]
+  } else {
+    proj <- st_crs(spf)
+    # handle sp/sf class
+    spf1 <- tospf(spf, rast)
+    sp <- spf1[[1]]
+    spf <- spf1[[2]]
+    rm(spf1)
+    # add ID
+    spf$burnval <- 1:length(spf$geometry)
+    zon <- gRasterize(spf, rast, value = "burnval")
+    
+    message("Aggregating stack by polygons...")
+    
+    zon <- as.data.frame(zonal(rast, zon,
+                   fun = function(x, ...) {
+                     uv <- unique(x)
+                     if (all(is.na(uv))) {
+                       sp <- NA
+                     } else {
+                       uv <- uv[!is.na(uv)]
+                       cats <- paste(lev$category[lev$ID %in% uv], collapse = "")
+                       if (cats != "") {
+                         sp <- unique(stri_sub(cats, seq(1, stri_length(cats),by = len), length = len))
+                         sp <- paste(sp, collapse = "")
+                       } else {
+                         sp <- ""
+                       }
+                     }
+                     vals <<- c(vals, sp)
+                     return(1) # gets a cryptic error with larger rasters...
+                     # if this worked, could just return as factor and not need to set values in next step, but speed is essentially the same
+                     # return(1)
+                   }))
+    zon$value <- vals
+    polys2 <- merge(spf, zon, by.x = "burnval", by.y = "zone")
+    polys2$burnval <- NULL
   
-  # get levels
-  uvals <- levels(r1)[[1]]
+    uvals <- data.frame(VALUE = unique(polys2$value)[!is.na(unique(polys2$value))])
+  }
+  
   
   # species lookup
   stk_order <- lookup
@@ -227,8 +270,13 @@ nh_stack_resample <- function(rast, lookup, fact = 10) {
   uvals$ALLCODES_CT <- parsct
   uvals$ALLCODES_CT[uvals$VALUE == ""] <- 0
   
-  levels(r1) <- uvals
-  names(r1) <- "nh_stack_resample"
-  
+  if (is.null(spf)) {
+    levels(r1) <- uvals
+    names(r1) <- "nh_stack_resample"
+  } else {
+    r1 <- merge(polys2, uvals, by.x = "value", by.y = "VALUE")
+    r1 <- st_transform(r1, proj)
+    if (sp) return(as(r1,Class = "Spatial")) else return(r1)
+  }
   return(r1)
 }

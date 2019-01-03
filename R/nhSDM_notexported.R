@@ -58,9 +58,8 @@ tospf <- function(spf, rastproj) {
 #' 
 #' @return raster object
 #' 
-#' @import sf
 #' @import raster
-#' @importFrom gdalUtils gdal_rasterize
+#' @importFrom sf st_union st_write
 #' @importFrom methods as
 #' 
 #' @keywords internal
@@ -69,7 +68,12 @@ gRasterize <- function(spf, rast, value = 1, background = NA) {
   
   # handle sp/sf class
   spf <- tospf(spf, rast)[[2]]
-  try(spf <- st_union(spf), silent = T)
+  if (is.numeric(value)) {
+      try(spf <- st_union(spf), silent = T)
+      spf$burnval <- value 
+    } else {
+      spf$burnval <- as.data.frame(spf)[,value]
+    }
   # temp names
   tmp <- gsub(".grd", "", rasterTmpFile())
   tmpr <- paste0(tmp, ".tif")
@@ -81,7 +85,7 @@ gRasterize <- function(spf, rast, value = 1, background = NA) {
     # gdal rasterize the mask area (fixed paths, just overwrites layer each time)
     writeRaster(rast, tmpr, datatype = "INT2U")
     st_write(obj = spf, dsn = tmpshp, driver = "ESRI Shapefile", quiet = T)
-    gdalUtils::gdal_rasterize(tmpshp, dst_filename = tmpr, burn = value)
+    gdalUtils::gdal_rasterize(tmpshp, dst_filename = tmpr, a = "burnval")
     r1 <- raster(tmpr)
     values(rast) <- values(r1)
     names(rast) <- "gRasterize"

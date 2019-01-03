@@ -4,7 +4,7 @@
 \alias{nh_stack_resample}
 \title{Resample a raster from nh_stack to a lower (coarser) resolution}
 \usage{
-nh_stack_resample(rast, lookup, fact = 10)
+nh_stack_resample(rast, lookup, fact = 10, spf = NULL)
 }
 \arguments{
 \item{rast}{raster output from nh_stack}
@@ -12,6 +12,8 @@ nh_stack_resample(rast, lookup, fact = 10)
 \item{lookup}{lookup table from nh_stack}
 
 \item{fact}{aggregation factor, in number of cells (see \code{?raster::aggregate})}
+
+\item{spf}{Optional vector spatial features to use for aggregation (sp or sf class polygons). If supplied, \code{fact} will be ignored}
 }
 \value{
 RasterLayer
@@ -20,13 +22,22 @@ RasterLayer
 Takes an output raster from nh_stack, and returns a lower-resolution
 version, with recalculated species assemblages for the larger cells.
 New values are "aggregated" by \code{fact}, the number of cells
-to aggregate in the x/y dimensions (see \code{raster::aggregate}).
+to aggregate in the x/y dimensions (see \code{?raster::aggregate}).
+}
+\details{
+You can also provide polygons (sp or sf-class) to \code{spf}, over which
+to aggregate species assemblages. The polygons intersecting areas with
+data in \code{rast} are returned, with columns identifying species codes 
+and counts. This method will fail with large rasters (see \code{raster::zonal}),
+in which case processing using a tiling approach may be necessary. Polygons
+will be returned in the original projection, but processing internally
+is done in the raster's projection.
 }
 \examples{
 \dontrun{
 stack <- nh_stack(list, rast, return.table = TRUE)
 
-# resample from 30m to 990m (i.e. ~1km) resolution
+# resample from 30m to 990m (~1km) resolution
 stack1km <- nh_stack_resample(stack[[1]], stack[[2]], fact = 33)
 
 # view species count raster
