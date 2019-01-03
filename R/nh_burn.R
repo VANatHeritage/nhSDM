@@ -34,10 +34,10 @@
 #' @return RasterLayer
 #' 
 #' @author David Bucklin
-#'
-#' @importFrom methods as
-#' @import sf
+#' 
 #' @import raster
+#' @importFrom methods as
+#' @importFrom sf st_buffer
 #'
 #' @export
 #'

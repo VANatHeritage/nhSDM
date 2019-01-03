@@ -23,7 +23,7 @@
 #' @author David Bucklin
 #'
 #' @importFrom methods as
-#' @import sf
+#' @importFrom sf st_area
 #' @import raster
 #'
 #' @export

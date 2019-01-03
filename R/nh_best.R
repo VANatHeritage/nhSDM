@@ -29,7 +29,7 @@
 #' @author David Bucklin
 #'
 #' @importFrom methods as
-#' @import sf
+#' @importFrom sf st_buffer st_area st_length st_cast st_union st_as_sf st_sfc st_sf
 #' @import raster
 #'
 #' @export

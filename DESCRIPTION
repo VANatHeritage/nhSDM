@@ -5,8 +5,8 @@ Version: 0.0.4-2
 Authors@R: person("David", "Bucklin", email = "david.bucklin@gmail.com", role = c("aut", "cre"))
 Description: Miscellaneous tools for working with Species Distribution Modelling (SDM) input and
   output data.
-Depends: R (>= 3.5.0), sf, raster
-Imports: methods,sp, gdalUtils, stringi, RSQLite
+Depends: R (>= 3.5.0), raster, sf
+Imports: methods, sp, gdalUtils, stringi, RSQLite
 Suggests: dplyr, lwgeom
 License: GPL-3
 Encoding: UTF-8

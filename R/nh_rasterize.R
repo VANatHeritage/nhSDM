@@ -24,9 +24,9 @@
 #' 
 #' @author David Bucklin
 #'
-#' @importFrom methods as
-#' @import sf
 #' @import raster
+#' @importFrom methods as
+#' @importFrom sf st_buffer st_write
 #' @importFrom gdalUtils gdal_rasterize
 #'
 #' @export

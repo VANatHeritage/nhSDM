@@ -39,7 +39,7 @@
 #' 
 #' @author David Bucklin
 #'
-#' @import sf
+#' @importFrom sf st_crs st_transform st_cast st_buffer st_as_sf st_intersection st_geometry_type st_length st_area st_centroid st_crs<-
 #' @importFrom methods as
 #' @import raster
 #' @export

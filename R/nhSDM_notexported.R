@@ -9,7 +9,7 @@
 #' 
 #' @return sf object
 #' 
-#' @import sf
+#' @importFrom sf st_as_sf st_geometry st_zm st_crs st_transform st_crs<-
 #' @importFrom methods as
 #' @importFrom raster projection
 #' 

@@ -160,6 +160,8 @@ nh_stack <- function(rastfiles, rast, codes = NULL, return.table = TRUE) {
 #'
 #' @import raster
 #' @importFrom stringi stri_rand_strings stri_length stri_sub
+#' @importFrom methods as
+#' @importFrom sf st_crs st_as_sfc st_intersects st_bbox st_intersects st_transform
 #' @export
 #'
 #' @examples

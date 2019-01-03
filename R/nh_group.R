@@ -31,7 +31,7 @@
 #' @author David Bucklin
 #'
 #' @importFrom methods as
-#' @importFrom sf st_as_sf st_distance st_is_longlat
+#' @importFrom sf st_as_sf st_distance st_is_longlat %>%
 #' @importFrom utils installed.packages
 #'
 #' @export
