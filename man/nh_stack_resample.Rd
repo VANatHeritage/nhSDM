@@ -13,7 +13,7 @@ nh_stack_resample(rast, lookup, fact = 10, spf = NULL)
 
 \item{fact}{aggregation factor, in number of cells (see \code{?raster::aggregate})}
 
-\item{spf}{Optional vector spatial features to use for aggregation (sp or sf class polygons). If supplied, \code{fact} will be ignored}
+\item{spf}{Optional vector spatial features to use for aggregation (sp or sf-class polygons). If supplied, \code{fact} will be ignored}
 }
 \value{
 RasterLayer
@@ -29,8 +29,8 @@ You can also provide polygons (sp or sf-class) to \code{spf}, over which
 to aggregate species assemblages. The polygons intersecting areas with
 data in \code{rast} are returned, with columns identifying species codes 
 and counts. This method will fail with large rasters (see \code{raster::zonal}),
-in which case processing using a tiling approach may be necessary. Polygons
-will be returned in the original projection, but processing internally
+in which case processing subsets of the stack raster is advised. Polygons
+will be returned in their original projection, but processing internally
 is done in the raster's projection.
 }
 \examples{

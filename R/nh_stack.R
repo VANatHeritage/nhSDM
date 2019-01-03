@@ -145,14 +145,14 @@ nh_stack <- function(rastfiles, rast, codes = NULL, return.table = TRUE) {
 #' to aggregate species assemblages. The polygons intersecting areas with
 #' data in \code{rast} are returned, with columns identifying species codes 
 #' and counts. This method will fail with large rasters (see \code{raster::zonal}),
-#' in which case processing using a tiling approach may be necessary. Polygons
-#' will be returned in the original projection, but processing internally
+#' in which case processing subsets of the stack raster is advised. Polygons
+#' will be returned in their original projection, but processing internally
 #' is done in the raster's projection.
 #' 
 #' @param rast raster output from nh_stack
 #' @param lookup lookup table from nh_stack
 #' @param fact aggregation factor, in number of cells (see \code{?raster::aggregate})
-#' @param spf Optional vector spatial features to use for aggregation (sp or sf class polygons). If supplied, \code{fact} will be ignored
+#' @param spf Optional vector spatial features to use for aggregation (sp or sf-class polygons). If supplied, \code{fact} will be ignored
 #' 
 #' @return RasterLayer
 #' 
@@ -224,13 +224,18 @@ nh_stack_resample <- function(rast, lookup, fact = 10, spf = NULL) {
     sp <- spf1[[1]]
     spf <- spf1[[2]]
     rm(spf1)
+    
+    # get intersecting polys
+    extr <- st_as_sfc(st_bbox(rast))
+    spf <- spf[unlist(lapply(st_intersects(spf, extr), any)),]
+    
     # add ID
     spf$burnval <- 1:length(spf$geometry)
-    zon <- gRasterize(spf, rast, value = "burnval")
-    
+    zonr <- gRasterize(spf, rast, value = "burnval")
+
     message("Aggregating stack by polygons...")
     
-    zon <- as.data.frame(zonal(rast, zon,
+    zon <- as.data.frame(zonal(rast, zonr,
                    fun = function(x, ...) {
                      uv <- unique(x)
                      if (all(is.na(uv))) {
@@ -257,7 +262,7 @@ nh_stack_resample <- function(rast, lookup, fact = 10, spf = NULL) {
     uvals <- data.frame(VALUE = unique(polys2$value)[!is.na(unique(polys2$value))])
   }
   
-  
+  message("Calculating stack attributes...")
   # species lookup
   stk_order <- lookup
   # parse
