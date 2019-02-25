@@ -1,3 +1,11 @@
+nhSDM 0.0.4-3
+================
+2019-02-25
+
+BUG FIXES
+
+* `nh_stack`: Fixed bug affecting large-extent rasters
+
 nhSDM 0.0.4-2
 ================
 2019-01-03

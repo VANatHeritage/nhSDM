@@ -94,14 +94,15 @@ nh_stack <- function(rastfiles, rast, codes = NULL, return.table = TRUE) {
     
     # crop/mask raster, get values
     cr <- crop(rcont, r, datatype = "INT4S")
-    rval <- mask(cr, r, maskvalue = 1, inverse = T)
+    rval <- mask(cr, r, maskvalue = 1, inverse = T, datatype = "INT4S")
     v <- values(rval)
     v <- v[!is.na(v)]
     
-    v2 <- rval[]
-    v2 <- v2[!is.na(v2)]
+    #v2 <- rval[]
+    #v2 <- v2[!is.na(v2)]
+    
     # paste to bigd
-    if (length(v2) > 0) bigd[v] <- paste0(bigd[v], spcd) 
+    if (length(v) > 0) bigd[v] <- paste0(bigd[v], spcd) 
   }
   
   message("Calculating stack attributes...")
