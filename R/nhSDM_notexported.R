@@ -69,7 +69,10 @@ gRasterize <- function(spf, rast, value = 1, background = NA) {
   # handle sp/sf class
   spf <- tospf(spf, rast)[[2]]
   if (is.numeric(value)) {
-      try(spf <- st_union(spf), silent = T)
+      try({
+        spf <- st_union(spf)
+        spf <- st_sf(spf)
+      }, silent = T)
       spf$burnval <- value 
     } else {
       spf$burnval <- as.data.frame(spf)[,value]
