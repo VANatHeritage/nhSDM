@@ -12,12 +12,17 @@
 #' a buffer. If rasterizing lines and a one-cell width is desired,
 #' do not use a buffer.
 #' 
+#' A vector can be given to `priority` for sorting prior to rasterization, 
+#' where higher values have priority. When \code{priority = NULL} (default),
+#' priority will be defined as the \code{pred.vals}.
+#' 
 #' If \code{rast.out} is not specified, the raster will remain in temp folder.
 #'
 #' @param spf input spatial features (model predictions; sp or sf spatial object)
 #' @param rast input raster template
 #' @param pred.vals prediction values for spf features
 #' @param buffer numeric; spatial buffer around spf to include in burn-in
+#' @param priority numeric; vector of priority values for feature rasterization (higher values have priority)
 #' @param rast.out Output raster file name (with file extension)
 #' 
 #' @return RasterLayer
@@ -34,18 +39,13 @@
 #' @examples
 #' \dontrun{
 #' spf <- st_read("acipoxyr/shapefiles/acipoxyr_20180105_133929_results.shp")
-#' # rasterize order is taken from row.names - higher row.names values have preference
-#' spf <- spf[order(spf$strord, decreasing = F),]
-#' row.names(spf) <- 1:length(spf$geometry)
 #' rast <- raster("template.tif")
 #' 
 #' # rasterize
 #' bla <- nh_rasterize(spf, rast, pred.vals = spf$prbblty, buffer = spf$strord*15)
 #' }
 
-nh_rasterize <- function(spf, rast, pred.vals, buffer = 0, rast.out = NULL) {
-  
-  spf$orig_rn <- row.names(spf)
+nh_rasterize <- function(spf, rast, pred.vals, buffer = 0, priority = NULL, rast.out = NULL) {
   
   # handle sp/sf class
   spf1 <- tospf(spf, rastproj = rast)
@@ -57,7 +57,7 @@ nh_rasterize <- function(spf, rast, pred.vals, buffer = 0, rast.out = NULL) {
   spf$pred <- pred.vals
   
   if (length(buffer) == 1 && buffer != 0) {
-    spf$buffer <- rep(buffer, length(spf$geometry))
+    spf$buffer <- rep(buffer, nrow(spf))
     buffer <- TRUE
   } else if (length(buffer) > 1) {
     spf$buffer <- buffer
@@ -65,6 +65,17 @@ nh_rasterize <- function(spf, rast, pred.vals, buffer = 0, rast.out = NULL) {
   } else {
     buffer <- FALSE
   }
+  
+  # order 
+  if (!is.null(priority)) {
+    # order using priority vector
+    spf <- spf[order(priority, decreasing = F, na.last = F),]
+  } else {
+    # order using pred
+    spf <- spf[order(spf$pred, decreasing = F, na.last = F),]
+  }
+  row.names(spf) <- 1:nrow(spf)
+  spf$orig_rn <- row.names(spf)
   
   message("Prepping raster...")
   # temp names
@@ -92,7 +103,7 @@ nh_rasterize <- function(spf, rast, pred.vals, buffer = 0, rast.out = NULL) {
   message("Rasterizing...")
   tryCatch({
     st_write(s1, tmpshp, delete_layer = T, quiet = T)
-    gdal_rasterize(tmpshp, tmpr, a = "pred")
+    gdalUtils::gdal_rasterize(tmpshp, tmpr, a = "pred")
   }, finally = {
     unlink(tmpshp)
   })

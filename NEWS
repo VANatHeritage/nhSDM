@@ -1,10 +1,15 @@
 nhSDM 0.0.4-3
 ================
-2019-02-25
+2019-04-30
 
 BUG FIXES
 
 * `nh_stack`: Fixed bug affecting large-extent rasters
+
+NEW FEATURES
+
+* `nh_rasterize`: Added `priority` argument, for ordering features prior to rasterization. Higher values have preference. Default
+behavior when `priority = NULL` is now set to order according to `pred.vals`.
 
 nhSDM 0.0.4-2
 ================

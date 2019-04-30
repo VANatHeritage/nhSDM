@@ -4,7 +4,8 @@
 \alias{nh_rasterize}
 \title{Convert vector format SDM prections to raster format}
 \usage{
-nh_rasterize(spf, rast, pred.vals, buffer = 0, rast.out = NULL)
+nh_rasterize(spf, rast, pred.vals, buffer = 0, priority = NULL,
+  rast.out = NULL)
 }
 \arguments{
 \item{spf}{input spatial features (model predictions; sp or sf spatial object)}
@@ -14,6 +15,8 @@ nh_rasterize(spf, rast, pred.vals, buffer = 0, rast.out = NULL)
 \item{pred.vals}{prediction values for spf features}
 
 \item{buffer}{numeric; spatial buffer around spf to include in burn-in}
+
+\item{priority}{numeric; vector of priority values for feature rasterization (higher values have priority)}
 
 \item{rast.out}{Output raster file name (with file extension)}
 }
@@ -32,14 +35,15 @@ sure to keep in mind the resolution of the raster when choosing
 a buffer. If rasterizing lines and a one-cell width is desired,
 do not use a buffer.
 
+A vector can be given to `priority` for sorting prior to rasterization, 
+where higher values have priority. When \code{priority = NULL} (default),
+priority will be defined as the \code{pred.vals}.
+
 If \code{rast.out} is not specified, the raster will remain in temp folder.
 }
 \examples{
 \dontrun{
 spf <- st_read("acipoxyr/shapefiles/acipoxyr_20180105_133929_results.shp")
-# rasterize order is taken from row.names - higher row.names values have preference
-spf <- spf[order(spf$strord, decreasing = F),]
-row.names(spf) <- 1:length(spf$geometry)
 rast <- raster("template.tif")
 
 # rasterize
