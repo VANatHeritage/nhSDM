@@ -24,6 +24,7 @@
 #' @param buffer numeric; spatial buffer around spf to include in burn-in
 #' @param priority numeric; vector of priority values for feature rasterization (higher values have priority)
 #' @param rast.out Output raster file name (with file extension)
+#' @param ... Additional arguments to writeRaster (e.g. overwrite)
 #' 
 #' @return RasterLayer
 #' 
@@ -45,7 +46,7 @@
 #' bla <- nh_rasterize(spf, rast, pred.vals = spf$prbblty, buffer = spf$strord*15)
 #' }
 
-nh_rasterize <- function(spf, rast, pred.vals, buffer = 0, priority = NULL, rast.out = NULL) {
+nh_rasterize <- function(spf, rast, pred.vals, buffer = 0, priority = NULL, rast.out = NULL, ...) {
   
   # handle sp/sf class
   spf1 <- tospf(spf, rastproj = rast)
@@ -83,7 +84,7 @@ nh_rasterize <- function(spf, rast, pred.vals, buffer = 0, priority = NULL, rast
   if (!is.null(rast.out)) tmpr <- rast.out else tmpr <- paste0(tmp, ".tif")
   tmpshp <- paste0(tmp, ".shp")
   values(rast) <- NA
-  writeRaster(rast, tmpr, overwrite = TRUE)
+  writeRaster(rast, tmpr, ...)
   
   # buffer
   if (buffer) {
@@ -105,11 +106,9 @@ nh_rasterize <- function(spf, rast, pred.vals, buffer = 0, priority = NULL, rast
     st_write(s1, tmpshp, delete_layer = T, quiet = T)
     gdalUtils::gdal_rasterize(tmpshp, tmpr, a = "pred")
   }, finally = {
-    unlink(tmpshp)
+    del <- paste(dirname(tmp), list.files(dirname(tmp), pattern = paste0(basename(tmp),"*")), sep = "/")
+    unlink(del[!grepl(".tif$", del)])
   })
   rout <- raster(tmpr)
-  
-  if (!is.null(rast.out)) unlink(paste0(tmp,"*"))
-  
   return(rout)
 }

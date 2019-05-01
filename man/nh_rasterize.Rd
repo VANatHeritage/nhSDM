@@ -5,7 +5,7 @@
 \title{Convert vector format SDM prections to raster format}
 \usage{
 nh_rasterize(spf, rast, pred.vals, buffer = 0, priority = NULL,
-  rast.out = NULL)
+  rast.out = NULL, ...)
 }
 \arguments{
 \item{spf}{input spatial features (model predictions; sp or sf spatial object)}
@@ -19,6 +19,8 @@ nh_rasterize(spf, rast, pred.vals, buffer = 0, priority = NULL,
 \item{priority}{numeric; vector of priority values for feature rasterization (higher values have priority)}
 
 \item{rast.out}{Output raster file name (with file extension)}
+
+\item{...}{Additional arguments to writeRaster (e.g. overwrite)}
 }
 \value{
 RasterLayer
