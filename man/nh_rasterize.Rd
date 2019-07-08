@@ -4,7 +4,7 @@
 \alias{nh_rasterize}
 \title{Convert vector format SDM prections to raster format}
 \usage{
-nh_rasterize(spf, rast, pred.vals, buffer = 0, priority = NULL,
+nh_rasterize(spf, rast, pred.vals, buffer = NULL, priority = NULL,
   rast.out = NULL, ...)
 }
 \arguments{
@@ -12,11 +12,11 @@ nh_rasterize(spf, rast, pred.vals, buffer = 0, priority = NULL,
 
 \item{rast}{input raster template}
 
-\item{pred.vals}{prediction values for spf features}
+\item{pred.vals}{column name in spf holding feature prediction values}
 
-\item{buffer}{numeric; spatial buffer around spf to include in burn-in}
+\item{buffer}{numeric (single value or vector matching length of spf); spatial buffer around spf to include in burn-in}
 
-\item{priority}{numeric; vector of priority values for feature rasterization (higher values have priority)}
+\item{priority}{column name in spf holding priority values for feature rasterization (higher values have priority)}
 
 \item{rast.out}{Output raster file name (with file extension)}
 
@@ -34,7 +34,7 @@ vector matching length of \code{spf}, for a variable buffer by feature.
 \details{
 Buffer units should be given in the units of \code{rast}. Make 
 sure to keep in mind the resolution of the raster when choosing 
-a buffer. If rasterizing lines and a one-cell width is desired,
+a buffer. If rasterizing lines, and a one-cell width is desired,
 do not use a buffer.
 
 A vector can be given to `priority` for sorting prior to rasterization, 
@@ -49,7 +49,7 @@ spf <- st_read("acipoxyr/shapefiles/acipoxyr_20180105_133929_results.shp")
 rast <- raster("template.tif")
 
 # rasterize
-bla <- nh_rasterize(spf, rast, pred.vals = spf$prbblty, buffer = spf$strord*15)
+bla <- nh_rasterize(spf, rast, pred.vals = "prbblty", buffer = spf$strord*15)
 }
 }
 \author{

@@ -9,7 +9,7 @@
 #' 
 #' Buffer units should be given in the units of \code{rast}. Make 
 #' sure to keep in mind the resolution of the raster when choosing 
-#' a buffer. If rasterizing lines and a one-cell width is desired,
+#' a buffer. If rasterizing lines, and a one-cell width is desired,
 #' do not use a buffer.
 #' 
 #' A vector can be given to `priority` for sorting prior to rasterization, 
@@ -20,9 +20,9 @@
 #'
 #' @param spf input spatial features (model predictions; sp or sf spatial object)
 #' @param rast input raster template
-#' @param pred.vals prediction values for spf features
-#' @param buffer numeric; spatial buffer around spf to include in burn-in
-#' @param priority numeric; vector of priority values for feature rasterization (higher values have priority)
+#' @param pred.vals column name in spf holding feature prediction values
+#' @param buffer numeric (single value or vector matching length of spf); spatial buffer around spf to include in burn-in
+#' @param priority column name in spf holding priority values for feature rasterization (higher values have priority)
 #' @param rast.out Output raster file name (with file extension)
 #' @param ... Additional arguments to writeRaster (e.g. overwrite)
 #' 
@@ -32,8 +32,8 @@
 #'
 #' @import raster
 #' @importFrom methods as
-#' @importFrom sf st_buffer st_write
-#' @importFrom gdalUtils gdal_rasterize
+#' @importFrom sf st_buffer st_cast
+#' @importFrom fasterize fasterize
 #'
 #' @export
 #'
@@ -43,10 +43,13 @@
 #' rast <- raster("template.tif")
 #' 
 #' # rasterize
-#' bla <- nh_rasterize(spf, rast, pred.vals = spf$prbblty, buffer = spf$strord*15)
+#' bla <- nh_rasterize(spf, rast, pred.vals = "prbblty", buffer = spf$strord*15)
 #' }
 
-nh_rasterize <- function(spf, rast, pred.vals, buffer = 0, priority = NULL, rast.out = NULL, ...) {
+nh_rasterize <- function(spf, rast, pred.vals, buffer = NULL, priority = NULL, rast.out = NULL, ...) {
+  
+  if (!pred.vals %in% names(spf)) stop(paste0("Column `", pred.vals, "` not found."))
+  if (!is.null(priority) && !priority %in% names(spf)) stop(paste0("Column `", priority, "` not found."))
   
   # handle sp/sf class
   spf1 <- tospf(spf, rastproj = rast)
@@ -54,61 +57,26 @@ nh_rasterize <- function(spf, rast, pred.vals, buffer = 0, priority = NULL, rast
   spf <- spf1[[2]]
   rm(spf1)
   
-  # assign pred vals, buffer
-  spf$pred <- pred.vals
-  
-  if (length(buffer) == 1 && buffer != 0) {
-    spf$buffer <- rep(buffer, nrow(spf))
-    buffer <- TRUE
-  } else if (length(buffer) > 1) {
-    spf$buffer <- buffer
-    buffer <- TRUE
+  if (!is.null(buffer)) {
+    spf <- st_cast(st_buffer(spf, buffer), "MULTIPOLYGON")
   } else {
-    buffer <- FALSE
+    # buffer linstring to at least one cell
+    if (grepl("POINT|LINESTRING", st_geometry_type(spf)[1]))
+      spf <- st_cast(st_buffer(spf, res(rast)[1]*sqrt(2) / 2), "MULTIPOLYGON")
   }
-  
-  # order 
-  if (!is.null(priority)) {
-    # order using priority vector
-    spf <- spf[order(priority, decreasing = F, na.last = F),]
-  } else {
-    # order using pred
-    spf <- spf[order(spf$pred, decreasing = F, na.last = F),]
-  }
-  row.names(spf) <- 1:nrow(spf)
-  spf$orig_rn <- row.names(spf)
-  
-  message("Prepping raster...")
-  # temp names
-  tmp <- gsub(".grd", "", rasterTmpFile())
-  if (!is.null(rast.out)) tmpr <- rast.out else tmpr <- paste0(tmp, ".tif")
-  tmpshp <- paste0(tmp, ".shp")
-  values(rast) <- NA
-  writeRaster(rast, tmpr, ...)
-  
-  # buffer
-  if (buffer) {
-    message("Buffering features...")
-    s0 <- spf[c("orig_rn", "pred")][0,]
-    for (so in sort(unique(spf$buffer))) {
-      s2 <- st_buffer(spf[c("orig_rn", "pred")][spf$buffer == so,], so)
-      s0 <- rbind(s0, s2)
-    }
-  } else {
-    s0 <- spf[c("orig_rn", "pred")]
-  }
-  # order by original row names
-  s1 <- s0[order(s0$orig_rn, decreasing = F),]
-  row.names(s1) <- s1$orig_rn           
   
   message("Rasterizing...")
-  tryCatch({
-    st_write(s1, tmpshp, delete_layer = T, quiet = T)
-    gdalUtils::gdal_rasterize(tmpshp, tmpr, a = "pred")
-  }, finally = {
-    del <- paste(dirname(tmp), list.files(dirname(tmp), pattern = paste0(basename(tmp),"*")), sep = "/")
-    unlink(del[!grepl(".tif$", del)])
-  })
-  rout <- raster(tmpr)
+  rast <- extend(crop(rast, extent(spf)), extent(spf))
+  if (!is.null(priority)) {
+    spf <- spf[order(as.data.frame(spf[priority])[,1], decreasing = F),]
+    rout <- fasterize(spf, rast, field = pred.vals, fun = "last", background = NA)
+  } else {
+    rout <- fasterize(spf, rast, field = pred.vals, fun = "max", background = NA)
+  }
+  
+  if (!is.null(rast.out)) {
+    writeRaster(rout, rast.out, ...)
+    rout <- raster(rast.out)
+  }
   return(rout)
 }

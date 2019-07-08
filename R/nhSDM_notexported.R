@@ -59,8 +59,9 @@ tospf <- function(spf, rastproj) {
 #' @return raster object
 #' 
 #' @import raster
-#' @importFrom sf st_union st_write
+#' @importFrom sf st_buffer st_cast
 #' @importFrom methods as
+#' @importFrom fasterize fasterize
 #' 
 #' @keywords internal
 
@@ -68,32 +69,15 @@ gRasterize <- function(spf, rast, value = 1, background = NA) {
   
   # handle sp/sf class
   spf <- tospf(spf, rast)[[2]]
+  
+  # fasterize needs polygons
+  if (grepl("POINT|LINESTRING", st_geometry_type(spf)[1]))
+    spf <- st_cast(st_buffer(spf, res(rast)[1]*sqrt(2) / 2), "MULTIPOLYGON")
   if (is.numeric(value)) {
-      try({
-        spf <- st_union(spf)
-        spf <- st_sf(spf)
-      }, silent = T)
-      spf$burnval <- value 
+      spf$burnval <- value
     } else {
       spf$burnval <- as.data.frame(spf)[,value]
     }
-  # temp names
-  tmp <- gsub(".grd", "", rasterTmpFile())
-  tmpr <- paste0(tmp, ".tif")
-  tmpshp <- paste0(tmp, ".shp")
-  values(rast) <- background
-  
-  # try to rasterize, remove temp files in any case
-  tryCatch({
-    # gdal rasterize the mask area (fixed paths, just overwrites layer each time)
-    writeRaster(rast, tmpr, datatype = "INT2U")
-    st_write(obj = spf, dsn = tmpshp, driver = "ESRI Shapefile", quiet = T)
-    gdalUtils::gdal_rasterize(tmpshp, dst_filename = tmpr, a = "burnval")
-    r1 <- raster(tmpr)
-    values(rast) <- values(r1)
-    names(rast) <- "gRasterize"
-  }, finally = {
-    unlink(paste0(tmp,"*"))
-  })
+  rast <- fasterize(spf, rast, field = "burnval", fun = "max")
   return(rast)
 }

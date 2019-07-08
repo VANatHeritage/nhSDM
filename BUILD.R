@@ -9,6 +9,7 @@ use_build_ignore("working")
 document()
 install()
 check()
+rm(list=ls())
 
 ###
 build_pdf <- function() {

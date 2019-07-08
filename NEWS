@@ -1,3 +1,22 @@
+nhSDM 0.0.5
+================
+2019-07-08
+
+GENERAL CHANGES
+
+* New library import: `fasterize`. Function `fasterize::fasterize` is 
+now used in place of external GDAL rasterization for functions requiring
+rasterization (nh_rasterize, internal `gRasterize` [nh_burn, nh_stack_resample]). 
+
+* `nh_rasterize`: `pred.vals` and `priority` arguments now use the column names from `spf` 
+as their value.
+
+BUG FIXES
+
+* `nh_stack_resample`: fixed issue due to naming of `levels` for the stack raster, affecting
+usage where the input stack is directly from `nh_stack` (as opposed to loaded from a file).
+
+
 nhSDM 0.0.4-3
 ================
 2019-05-01
