@@ -41,7 +41,7 @@ stack <- nh_stack(list, rast, return.table = TRUE)
 stack1km <- nh_stack_resample(stack[[1]], stack[[2]], fact = 33)
 
 # view species count raster
-ct <- deratify(r2, att = "ALLCODES_CT")
+ct <- deratify(stack1km, att = "ALLCODES_CT")
 plot(ct)
 }
 }

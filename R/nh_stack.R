@@ -50,7 +50,7 @@
 #'
 #' stack <- nh_stack(list, rast)
 #' # view raster attribute table
-#' levels(stack)[[1]]
+#' levels(stack[[1]])
 #' }
 
 nh_stack <- function(rastfiles, rast, codes = NULL, return.table = TRUE) {
@@ -173,7 +173,7 @@ nh_stack <- function(rastfiles, rast, codes = NULL, return.table = TRUE) {
 #' stack1km <- nh_stack_resample(stack[[1]], stack[[2]], fact = 33)
 #' 
 #' # view species count raster
-#' ct <- deratify(r2, att = "ALLCODES_CT")
+#' ct <- deratify(stack1km, att = "ALLCODES_CT")
 #' plot(ct)
 #' }
 
@@ -183,6 +183,7 @@ nh_stack_resample <- function(rast, lookup, fact = 10, spf = NULL) {
   len <- unique(nchar(lookup$nh_stack_uval))
   # get levels
   lev <- levels(rast)[[1]]
+  names(lev)[1:2] <- c("ID", "category")
   
   # aggregate
   vals <- c()

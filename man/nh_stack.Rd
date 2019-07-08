@@ -55,7 +55,7 @@ list <- sort(list.files(paste0(rastout, t, "/thumb"), full.names = T,
 
 stack <- nh_stack(list, rast)
 # view raster attribute table
-levels(stack)[[1]]
+levels(stack[[1]])
 }
 }
 \author{
