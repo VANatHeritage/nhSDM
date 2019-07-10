@@ -67,15 +67,9 @@ nh_sample <- function(spf, rast, num.samps = NULL, replace = FALSE, force.min = 
       stop("num.samps must a vector of length one, or length equal to spf.")
     }
   }
-  # transform if necessary
-  if (!is.na(st_crs(spf)$proj4string)) {
-    if (st_crs(spf)$proj4string != projection(rast)) spf <- st_transform(spf, crs = projection(rast))
-  } else {
-    message("No projection on input features. Assuming features are using raster's projection...")
-    st_crs(spf) <- projection(rast)
-  }
+
   # seq raster
-  r1 <- crop(rast, extent(extent(spf)[1], extent(spf)[2], extent(spf)[3], extent(spf)[4])) # bug when applying extent object from spf directly
+  r1 <- crop(rast, st_sf(st_buffer(st_as_sfc(st_bbox(spf)), dist = res(rast)[1]))) # crop to 1-cell buffered extenet of spf
   r2 <- r1
   values(r2) <- 1:ncell(r1)
   r2 <- mask(r2, r1)
