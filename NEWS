@@ -1,3 +1,14 @@
+nhSDM 0.0.5-1
+================
+2019-08-22
+
+GENERAL CHANGES
+
+* `nh_stack`: Allowed use of either binary 1/0 or 1/NoData rasters as input
+(0 and NoData treated the same). Previously allowed only 1/0 rasters. 
+Also added check for raster templates that are too large for the function.
+
+
 nhSDM 0.0.5
 ================
 2019-07-08

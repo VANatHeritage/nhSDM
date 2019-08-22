@@ -59,6 +59,7 @@ nh_stack <- function(rastfiles, rast, codes = NULL, return.table = TRUE) {
   if (!is.null(codes) & length(codes) != length(list)) stop("`codes` length must match `rastfiles` length.")
   
   message("Prepping template raster...")
+  if (ncell(rast) > 2.147e+9) stop("Raster template dimensions too large, will need to process in blocks.")
   rcont <- setValues(raster(rast), 1:ncell(rast))
   dataType(rcont) <- "INT4S"
   
@@ -94,13 +95,14 @@ nh_stack <- function(rastfiles, rast, codes = NULL, return.table = TRUE) {
     
     # crop/mask raster, get values
     cr <- crop(rcont, r, datatype = "INT4S")
-    rval <- mask(cr, r, maskvalue = 1, inverse = T, datatype = "INT4S")
-    v <- values(rval)
-    v <- v[!is.na(v)]
+    rval <- values(r)
+    v <- values(cr)[!is.na(rval) & rval==1]
     
-    #v2 <- rval[]
-    #v2 <- v2[!is.na(v2)]
-    
+    # old version, this didn't like NA values in mask
+    # rval <- mask(cr, r, maskvalue = 1, inverse = T,♥ datatype = "INT4S")
+    # v <- values(rval)
+    # v <- v[!is.na(v)]
+
     # paste to bigd
     if (length(v) > 0) bigd[v] <- paste0(bigd[v], spcd) 
   }
