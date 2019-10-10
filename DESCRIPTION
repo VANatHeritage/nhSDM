@@ -1,13 +1,13 @@
 Package: nhSDM
 Title: Tools for Natural Heritage SDMs
-Date: 2019-08-22
-Version: 0.0.5-1
+Date: 2019-10-10
+Version: 0.0.6
 Authors@R: person("David", "Bucklin", email = "david.bucklin@gmail.com", role = c("aut", "cre"))
 Description: Miscellaneous tools for working with Species Distribution Modelling (SDM) input and
   output data.
 Depends: R (>= 3.5.0), raster, sf
-Imports: methods, sp, stringi, RSQLite, fasterize
-Suggests: dplyr, lwgeom
+Imports: methods, sp, stringi, RSQLite, fasterize, lwgeom
+Suggests: dplyr
 License: GPL-3
 Encoding: UTF-8
 LazyData: true

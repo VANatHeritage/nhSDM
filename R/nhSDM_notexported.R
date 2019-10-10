@@ -42,7 +42,7 @@ tospf <- function(spf, rastproj) {
 
 # gRasterize
 #'
-#' GDAL Rasterize with temp file parameters and all polygon values = 1
+#' Rasterize with temp file parameters and all polygon values = 1
 #' 
 #' A temporary raster and shapefile are created in the raster temp directory, and 
 #' deleted. 
@@ -50,6 +50,8 @@ tospf <- function(spf, rastproj) {
 #' This is used internally in nh_burn instead of raster::rasterize, which was found to
 #' be very slow for large and/or many feature rasterizing. In some cases a 
 #' 'striping' was noticed in the resulting raster, in areas where there were no features.
+#' 
+#' Previous versions used GDAL, now uses R package fasterize.
 #' 
 #' @param spf input sf or sp object
 #' @param rast raster dataset with desired output projection, extent, cell size
@@ -80,4 +82,39 @@ gRasterize <- function(spf, rast, value = 1, background = NA) {
     }
   rast <- fasterize(spf, rast, field = "burnval", fun = "max")
   return(rast)
+}
+
+# nodes
+#'
+#' Calculate nodes in a line network, using line direction
+#' 
+#' Returns same object with added columns startNode and endNode
+#' 
+#' @param spf input sf object
+#' 
+#' @importFrom lwgeom st_snap_to_grid st_startpoint st_endpoint
+#' @import sf
+#' 
+#' @return sf object
+#' 
+#' @keywords internal
+
+nodes <- function(spf) {
+  message("Calculating line connections...")
+  st <- st_snap_to_grid(st_transform(st_startpoint(spf), 3857), 0.01) # need to transform from latlong to use snap to grid
+  spN <- unlist(lapply(st_equals(st), min))
+  ep <- st_snap_to_grid(st_transform(st_endpoint(spf), 3857), 0.01)
+  epN <- unlist(lapply(st_equals(ep), min))
+  epN <- epN + max(spN)
+  
+  spf$startNode <- spN
+  spf$endNode <- epN
+  
+  # re-assign endnode nums to match startnodes
+  suppressWarnings({
+    match <- unlist(lapply(st_equals(ep, st), min))
+    match[match==Inf] <- NA
+    spf$endNode[!is.na(match)] <- spN[match[!is.na(match)]]
+  })
+  return(spf)
 }

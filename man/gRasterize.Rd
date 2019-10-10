@@ -2,7 +2,7 @@
 % Please edit documentation in R/nhSDM_notexported.R
 \name{gRasterize}
 \alias{gRasterize}
-\title{GDAL Rasterize with temp file parameters and all polygon values = 1}
+\title{Rasterize with temp file parameters and all polygon values = 1}
 \usage{
 gRasterize(spf, rast, value = 1, background = NA)
 }
@@ -26,5 +26,7 @@ deleted.
 This is used internally in nh_burn instead of raster::rasterize, which was found to
 be very slow for large and/or many feature rasterizing. In some cases a 
 'striping' was noticed in the resulting raster, in areas where there were no features.
+
+Previous versions used GDAL, now uses R package fasterize.
 }
 \keyword{internal}

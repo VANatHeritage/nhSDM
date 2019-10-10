@@ -1,3 +1,17 @@
+nhSDM 0.0.6
+================
+2019-10-10
+
+NEW FUNCTIONS
+
+* `nh_linefill`: For line-based SDM predictions along a network (e.g. stream reaches), 
+identify lines between predicted suitable lines
+
+* `nh_map`: Makes a suitable/unsuitable binary raster map, given a continuous SDM output or raster
+template. Includes a set of arguments which provide options to further modify the map using
+feature or raster datasets.
+
+
 nhSDM 0.0.5-1
 ================
 2019-08-22
