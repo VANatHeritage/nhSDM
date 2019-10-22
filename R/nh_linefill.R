@@ -110,7 +110,7 @@ nh_linefill <- function(spf, field, max.dist = NA, max.line = NA) {
       # check length of reaches
       if (!is.na(max.dist)) {
         rleng <- unlist(lapply(rt, function(x) {
-          leng <- sum(x$nh_linefill_leng_m[2:nrow(x)])
+          leng <- sum(x$nh_linefill_leng_m[!x$nh_linefill_id %in% ls])
           leng <= max.dist 
         }))
         rls <- unlist(rls[rleng])
