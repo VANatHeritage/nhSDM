@@ -4,8 +4,15 @@
 \alias{nh_best}
 \title{Extract areas with best (highest value) as polygons from an SDM prediction raster, with optional feature mask}
 \usage{
-nh_best(rast, spf = NULL, top.percent = NULL, min.size = NULL,
-  min.dist = NULL, num.patches = NULL, rank.by = "area")
+nh_best(
+  rast,
+  spf = NULL,
+  top.percent = NULL,
+  min.size = NULL,
+  min.dist = NULL,
+  num.patches = NULL,
+  rank.by = "area"
+)
 }
 \arguments{
 \item{rast}{input raster model output with continuous values}
@@ -33,7 +40,7 @@ will not be included in the returned polygons.
 \code{top.percent} and \code{min.size} will both be derived from \code{spf} if they are null
 and \code{spf} is given. In this case, \code{top.percent} will be set to be equal to \code{spf}'s cell coverage 
 (prevalence relative to non-NA areas in raster). \code{min.size} will be set to the area 
-of the smallest feature in \code{spf}. If \code{spf} are line or point features, this will be zero.
+of the smallest feature in \code{spf}. If \code{spf} are line or point features, this will be zero. 
 
 \code{rank.by} only subsets the outputs if \code{num.patches} is set. \code{rank.by}
 must be set to \code{"value"} to return the mean prediction value of the patch.

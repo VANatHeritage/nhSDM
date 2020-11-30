@@ -4,8 +4,15 @@
 \alias{nh_rasterize}
 \title{Convert vector format SDM prections to raster format}
 \usage{
-nh_rasterize(spf, rast, pred.vals, buffer = NULL, priority = NULL,
-  rast.out = NULL, ...)
+nh_rasterize(
+  spf,
+  rast,
+  pred.vals,
+  buffer = NULL,
+  priority = NULL,
+  rast.out = NULL,
+  ...
+)
 }
 \arguments{
 \item{spf}{input spatial features (model predictions; sp or sf spatial object)}

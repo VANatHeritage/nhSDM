@@ -30,7 +30,7 @@ tospf <- function(spf, rastproj) {
   # transform if necessary
   if (!missing(rastproj)) {
     if (!is.na(st_crs(spf)$proj4string)) {
-      if (st_crs(spf)$proj4string != projection(rastproj)) spf <- st_transform(spf, crs = projection(rastproj))
+      if (st_crs(spf)$proj4string != st_crs(rastproj)$proj4string) spf <- st_transform(spf, crs = st_crs(rastproj)$proj4string)
     } else {
       message("No projection on input features. Assuming features are using raster's projection...")
       st_crs(spf) <- projection(rastproj)

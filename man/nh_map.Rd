@@ -4,8 +4,15 @@
 \alias{nh_map}
 \title{Make a suitable/unsuitable binary map, given a continuous SDM output or raster template}
 \usage{
-nh_map(rast, thresh = NULL, feature.occ = NULL, feature.burn = NULL,
-  feature.mask = NULL, raster.mask = NULL, patch.drop = NULL)
+nh_map(
+  rast,
+  thresh = NULL,
+  feature.occ = NULL,
+  feature.burn = NULL,
+  feature.mask = NULL,
+  raster.mask = NULL,
+  patch.drop = NULL
+)
 }
 \arguments{
 \item{rast}{input raster model output (values between 0 and 1); if no model, a template raster must be provided}
@@ -37,7 +44,7 @@ and not NoData (\code{raster.mask}) are kept (value = 1). All other cells are gi
 
 Patches (contiguous groups of cells = 1) are then be dropped by specifying a 
 minimum patch size to \code{patch.drop} in area units of the raster's CRS 
-(see nhSDM::nh_patchdrop).
+(see nhSDM::nh_patchdrop). 
 
 The final step is to 'burn in' (rasterize with value = 1) features 
 from \code{feature.occ} and \code{feature.burn}. Since this is the last step, it is not

@@ -4,8 +4,7 @@
 \alias{nh_burn}
 \title{Add areas represented by features ('burn-in') to a binary raster SDM output}
 \usage{
-nh_burn(spf, rast, orig.thresh = NULL, buffer = 0,
-  return.thresh = FALSE, ...)
+nh_burn(spf, rast, orig.thresh = NULL, buffer = 0, return.thresh = FALSE, ...)
 }
 \arguments{
 \item{spf}{input spatial features (sp or sf spatial object)}

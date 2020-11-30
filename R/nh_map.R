@@ -91,12 +91,15 @@ nh_map <- function(rast, thresh = NULL, feature.occ = NULL, feature.burn = NULL,
   }
   
   # burn-in features
+  # UPDATE: this collects all features into one sf-object (does not union). 
+  # Overlaps seem to be fine with fasterize (all covered areas will get value == 1).
   ls.burn <- list()
-  if (!is.null(feature.occ)) ls.burn[[(length(ls.burn)+1)]] <- st_sf(a = 1, geom = st_union(tospf(feature.occ, rast)[[2]]))
-  if (!is.null(feature.burn)) ls.burn[[(length(ls.burn)+1)]] <- st_sf(a = 1, geom = st_union(tospf(feature.burn, rast)[[2]]))
+  if (!is.null(feature.occ)) ls.burn[[(length(ls.burn)+1)]] <- st_sf(a = 1, geometry = tospf(feature.occ, rast)[[2]]$geometry)
+  if (!is.null(feature.burn)) ls.burn[[(length(ls.burn)+1)]] <- st_sf(a = 1, geometry = tospf(feature.burn, rast)[[2]]$geometry)
   if (length(ls.burn) > 0) {
     message("Burning in features...")
-    burn <- st_sf(a=1, geom = st_union(do.call(rbind, ls.burn))) 
+    # burn <- st_sf(a=1, geom = st_union(do.call(rbind, ls.burn)))   # seems union can cause issues. Better to just collect geoms using rbind
+    burn <- st_cast(do.call(rbind, ls.burn), "MULTIPOLYGON")
     r <- extend(r, burn, value = 0)
     burnr <- fasterize(burn, r, background = 0)
     r <- max(r, burnr)
