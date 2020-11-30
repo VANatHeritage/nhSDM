@@ -38,7 +38,7 @@ and then performs additional changes to the binary map, depending on inputs. If
 no continuous map is to be used, then a template raster should be given to \code{rast}.
 }
 \details{
-Reclassification (when \code{thresh} is given) is always peformed first. 
+Reclassification (when \code{thresh} is given) is always performed first. 
 After this, optional masks are applied where areas within features (\code{feature.mask}) 
 and not NoData (\code{raster.mask}) are kept (value = 1). All other cells are given (value = 0).
 
