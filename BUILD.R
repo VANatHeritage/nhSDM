@@ -24,4 +24,3 @@ build_pdf <- function() {
   system(cmd)
 }
 build_pdf()
-

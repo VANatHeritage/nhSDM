@@ -4,7 +4,14 @@
 \alias{nh_patchdrop}
 \title{Remove contiguous patches smaller than a given patch size from binary output}
 \usage{
-nh_patchdrop(spf = NULL, rast, min.patch = NULL, directions = 8, ...)
+nh_patchdrop(
+  spf = NULL,
+  rast,
+  min.patch = NULL,
+  directions = 8,
+  updatevalue = 0,
+  ...
+)
 }
 \arguments{
 \item{spf}{input spatial features (sp or sf spatial object)}
@@ -14,6 +21,8 @@ nh_patchdrop(spf = NULL, rast, min.patch = NULL, directions = 8, ...)
 \item{min.patch}{area of minimum patch size, in area units used in \code{rast}}
 
 \item{directions}{Integer. Which cells are considered adjacent? Should be 8 (default; Queen's case) or 4 (Rook's case). From \code{raster::clump}}
+
+\item{updatevalue}{Integer. Value to apply to cells which do not meet the min.patch size. Default = 0.}
 
 \item{...}{Other arguments as to \code{raster::writeRaster}}
 }

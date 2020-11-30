@@ -64,7 +64,7 @@ nh_map <- function(rast, thresh = NULL, feature.occ = NULL, feature.burn = NULL,
   # feature mask
   if (!is.null(feature.mask)) {
     message("Masking by feature mask...")
-    feature.mask <- st_sf(a = 1, geom = st_union(tospf(feature.mask, r)[[2]]))
+    feature.mask <- tospf(feature.mask, r)[[2]]
     r <- crop(r, feature.mask)
     msk <- fasterize(feature.mask, r)
     r <- mask(r, msk, updatevalue = 0)
@@ -84,7 +84,7 @@ nh_map <- function(rast, thresh = NULL, feature.occ = NULL, feature.burn = NULL,
   if (!is.null(patch.drop) & run.pd) {
     px <- res(r)[1] * res(r)[2]
     if (!patch.drop < px) {
-      r <- nh_patchdrop(rast = r, min.patch = patch.drop)
+      r <- nh_patchdrop(rast = r, min.patch = patch.drop, updatevalue = 0)
     } else {
       message("patch.drop size smaller than raster cell resolution, skipping patch removal...")
     }

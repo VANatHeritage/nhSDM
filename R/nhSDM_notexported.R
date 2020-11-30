@@ -24,9 +24,13 @@ tospf <- function(spf, rastproj) {
   } else {
     stop("Must provide either 'sp' or 'sf'-class spatial object.")
   }
-  spf$geometry <- st_geometry(spf) # to fix geom column name
-  spf <- st_zm(spf)
+  # standardize geometry column name
+  spf$geometry <- st_geometry(spf) 
+  spf <- st_zm(st_set_geometry(spf, "geometry"))
+  spf$geom <- NULL
   
+  # spf <- st_zm(spf)
+
   # transform if necessary
   if (!missing(rastproj)) {
     if (!is.na(st_crs(spf)$proj4string)) {

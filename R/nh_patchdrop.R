@@ -16,6 +16,7 @@
 #' @param rast input binary raster output (values either NA/0 or 1)
 #' @param min.patch area of minimum patch size, in area units used in \code{rast}
 #' @param directions Integer. Which cells are considered adjacent? Should be 8 (default; Queen's case) or 4 (Rook's case). From \code{raster::clump}
+#' @param updatevalue Integer. Value to apply to cells which do not meet the min.patch size. Default = 0.
 #' @param ... Other arguments as to \code{raster::writeRaster}
 #' 
 #' @return RasterLayer
@@ -41,7 +42,7 @@
 #'  filename = "rast_contig_10km.tif", datatype = "INT2U")
 #' }
 
-nh_patchdrop <- function(spf = NULL, rast, min.patch = NULL, directions = 8, ...) {
+nh_patchdrop <- function(spf = NULL, rast, min.patch = NULL, directions = 8, updatevalue=0, ...) {
   
   if (!"igraph" %in% installed.packages()) stop("The package 'igraph' is required for this function.")
   if (is.null(spf) & is.null(min.patch)) stop("Must provide either spatial features (spf) or min.patch size.")
@@ -67,9 +68,6 @@ nh_patchdrop <- function(spf = NULL, rast, min.patch = NULL, directions = 8, ...
     message("Minimum patch size = ", cells, " cells...")
   }
   
-  # new value for excluded patches
-  if (0 %in% unique(rast)) upd <- 0 else upd <- NA
-  
   # run clump (extend to break grouping from one x-edge to another)
   r2 <- crop(clump(extend(rast, y=c(1,1)), directions = directions), rast)
 
@@ -83,6 +81,6 @@ nh_patchdrop <- function(spf = NULL, rast, min.patch = NULL, directions = 8, ...
   
   r2[r2 %in% drop$value] <- NA
 
-  rout <- mask(rast, r2, updatevalue = upd, ...)
+  rout <- mask(rast, r2, updatevalue = updatevalue, ...)
   return(rout)
 }
