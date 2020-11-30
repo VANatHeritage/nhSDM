@@ -2,6 +2,7 @@
 
 export(nh_best)
 export(nh_burn)
+export(nh_crop)
 export(nh_group)
 export(nh_linefill)
 export(nh_map)

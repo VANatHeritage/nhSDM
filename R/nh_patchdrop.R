@@ -68,9 +68,14 @@ nh_patchdrop <- function(spf = NULL, rast, min.patch = NULL, directions = 8, upd
     message("Minimum patch size = ", cells, " cells...")
   }
   
-  # run clump (extend to break grouping from one x-edge to another)
-  r2 <- crop(clump(extend(rast, y=c(1,1)), directions = directions), rast)
-
+  # run clump
+  if (sum(rast[1:nrow(rast), 1], na.rm=T) > 0) {
+    # extend to break grouping from one x-edge to another, when there are some values 
+    r2 <- crop(clump(extend(rast, y=c(1,1)), directions = directions), rast) 
+  } else {
+    r2 <- clump(rast, directions = directions)
+  }
+  
   # figure out what to drop
   drop <- as.data.frame(freq(r2))
   if (min(drop$count) >= cells) {
