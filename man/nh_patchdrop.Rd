@@ -22,7 +22,7 @@ nh_patchdrop(
 
 \item{directions}{Integer. Which cells are considered adjacent? Should be 8 (default; Queen's case) or 4 (Rook's case). From \code{raster::clump}}
 
-\item{updatevalue}{Integer. Value to apply to cells which do not meet the min.patch size. Default = 0.}
+\item{updatevalue}{Integer or NA. Value to apply to cells which do not meet the min.patch size. Default = 0.}
 
 \item{...}{Other arguments as to \code{raster::writeRaster}}
 }
@@ -32,9 +32,7 @@ RasterLayer
 \description{
 Takes a binary/thresholded raster (values either NA, 0, or 1), and 
 returns a binary raster. Clumps of contiguous cells with the value (1) 
-that are smaller than the \code{min.patch} size are given a value of 0 
-(if 0 values are present in the input 'rast'); otherwise, they
-are given an NA value.
+that are smaller than the \code{min.patch} size are given \code{updatevalue} (default = 0).
 }
 \details{
 If 'spf' is given, the smallest feature's area will be used to derive

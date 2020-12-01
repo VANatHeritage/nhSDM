@@ -3,7 +3,7 @@
 #' Crop extra rows/columns from all sides of a raster
 #' 
 #' This function will reduce the extent of a raster, by removing rows/columns
-#' if they do not have any non-NA cells with a value greater than zero.
+#' from all sides if they do not have any non-NA cells with a value greater than zero.
 #' One buffer row/column is left on each side.
 #' 
 #' @param rast input raster

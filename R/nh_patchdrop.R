@@ -4,9 +4,7 @@
 #' 
 #' Takes a binary/thresholded raster (values either NA, 0, or 1), and 
 #' returns a binary raster. Clumps of contiguous cells with the value (1) 
-#' that are smaller than the \code{min.patch} size are given a value of 0 
-#' (if 0 values are present in the input 'rast'); otherwise, they
-#' are given an NA value.
+#' that are smaller than the \code{min.patch} size are given \code{updatevalue} (default = 0).
 #' 
 #' If 'spf' is given, the smallest feature's area will be used to derive
 #' a \code{min.patch} value, and any given 'min.patch' is ignored. If 'spf' is 
@@ -16,7 +14,7 @@
 #' @param rast input binary raster output (values either NA/0 or 1)
 #' @param min.patch area of minimum patch size, in area units used in \code{rast}
 #' @param directions Integer. Which cells are considered adjacent? Should be 8 (default; Queen's case) or 4 (Rook's case). From \code{raster::clump}
-#' @param updatevalue Integer. Value to apply to cells which do not meet the min.patch size. Default = 0.
+#' @param updatevalue Integer or NA. Value to apply to cells which do not meet the min.patch size. Default = 0.
 #' @param ... Other arguments as to \code{raster::writeRaster}
 #' 
 #' @return RasterLayer
