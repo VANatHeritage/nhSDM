@@ -51,10 +51,12 @@ of the feature that the point was generated within.
 }
 \examples{
 \dontrun{
-r<-raster::raster("AnnMnTemp.tif")
-spf <- rgdal::readOGR("ambymabe/polygon_data", "ambymabe")
-# can also use sf: spf <- sf::st_read("ambymabe/polygon_data/ambymabe.shp")
-spf.samps <- nh_sample(spf, r, num.samps)
+rast <-terra::rast("env_vars/raster/AnnMnTemp.tif")
+# spf <- rgdal::readOGR("species/ambymabe/inputs/presence", "ambymabe_expl")
+spf <- sf::st_read("species/ambymabe/inputs/presence/ambymabe_expl.shp")
+spf$num.samps <- sample(1:5, nrow(spf), replace = T)
+spf.samps <- nh_sample(spf, rast, num.samps =spf$num.samps, replace = F, force.min = T)
+nrow(spf.samps) == sum(spf$num.samps)  # Should be TRUE when force.min = T.
 }
 }
 \author{

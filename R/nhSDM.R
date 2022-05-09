@@ -4,5 +4,6 @@
 #' with Natural Heritage (e.g., Element Occurrence) data.
 
 #' @import raster
+#' @import terra
 #' @import sf
 #' @import sp
