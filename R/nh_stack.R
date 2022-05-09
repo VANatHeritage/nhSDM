@@ -21,7 +21,7 @@
 #' All rasters must have the same projection and resolution, though
 #' they can have different extents - the processing extent is defined by
 #' \code{rast}. To summarize all rasters across their
-#' entire extents, \code{template} should essentially be the union (mosaic) 
+#' entire extents, \code{rast} should essentially be the union (mosaic) 
 #' of all raster extents.
 #' 
 #' When \code{return.table} is TRUE, a list with two objects (1), the 
@@ -33,6 +33,7 @@
 #' @param rast raster template dataset
 #' @param codes species codes; character vector. If given, must match length of \code{rastfiles}
 #' @param return.table Whether to return a table with nh_stack unique values, species codes, and filenames
+#' @param clip.feat sf data with masking features for rastfiles. Must have column named 'code', matching \code{codes}
 #' 
 #' @return RasterLayer
 #' 
@@ -40,6 +41,7 @@
 #'
 #' @import raster
 #' @importFrom stringi stri_rand_strings stri_length stri_sub
+#' @importFrom sf st_transform st_crs
 #' @export
 #'
 #' @examples
@@ -53,10 +55,17 @@
 #' levels(stack[[1]])
 #' }
 
-nh_stack <- function(rastfiles, rast, codes = NULL, return.table = TRUE) {
+nh_stack <- function(rastfiles, rast, codes = NULL, return.table = TRUE, clip.feat = NULL) {
   
   list <- rastfiles
   if (!is.null(codes) & length(codes) != length(list)) stop("`codes` length must match `rastfiles` length.")
+  
+  # load clip.feat
+  if (!is.null(clip.feat)) {
+    if (!"code" %in% names(clip.feat)) stop("`clip.feat` must have the column 'code' for matching raster codes.")
+    message('Prepping clipping features...')
+    clip <- st_transform(clip.feat, sf::st_crs(rast))
+  }
   
   message("Prepping template raster...")
   if (ncell(rast) > 2.147e+9) stop("Raster template dimensions too large, will need to process in blocks.")
@@ -74,11 +83,11 @@ nh_stack <- function(rastfiles, rast, codes = NULL, return.table = TRUE) {
   }
   # get codes for length you need
   stk_order <- data.frame(uval = sample(cd, size = sz, replace = F), code_nm = NA, file = list)
-  
+  # this is a running list of codes for each cell
   bigd <- rep("",ncell(rcont))
   # loop over layers
   message("Stacking layers...")
-  for (i in 1:length(stk_order$uval)) { 
+  for (i in 1:nrow(stk_order)) { 
     # get nh_stack uval
     spcd <- stk_order$uval[i]
     # get/crop raster
@@ -90,16 +99,27 @@ nh_stack <- function(rastfiles, rast, codes = NULL, return.table = TRUE) {
       message("Non-unique code '", names(r), "' changed to '",paste0(names(r), "_", spcd),"'.")
       names(r) <- paste0(names(r), "_", spcd)
     }
-    message(paste0("Working on raster ", names(r), "..."))
+    message(paste0("\nWorking on raster ", names(r), "..."), appendLF = F)
     stk_order$code_nm[stk_order$uval == spcd] <- names(r)
     
-    # crop/mask raster, get values
+    # Clip adjust procedure
+    if (!is.null(clip.feat)) {
+      c1 <- clip[clip$code==names(r),]
+      if (nrow(c1) == 1) {
+        message('Clipping...', appendLF = F)
+        rc <- crop(r, c1)
+        c1rast <- fasterize(c1, raster = rc)
+        r <- mask(rc, c1rast, updatevalue=0)
+      }
+    }
+    
+    # crop/mask continuous raster, get values
     cr <- crop(rcont, r, datatype = "INT4S")
     rval <- values(r)
     v <- values(cr)[!is.na(rval) & rval==1]
     
     # old version, this didn't like NA values in mask
-    # rval <- mask(cr, r, maskvalue = 1, inverse = T,♥ datatype = "INT4S")
+    # rval <- mask(cr, r, maskvalue = 1, inverse = T, datatype = "INT4S")
     # v <- values(rval)
     # v <- v[!is.na(v)]
 
@@ -107,7 +127,7 @@ nh_stack <- function(rastfiles, rast, codes = NULL, return.table = TRUE) {
     if (length(v) > 0) bigd[v] <- paste0(bigd[v], spcd) 
   }
   
-  message("Calculating stack attributes...")
+  message("\nCalculating stack attributes...")
   r2 <- setValues(raster(rcont), as.factor(bigd))
 
   # get unique values
@@ -208,7 +228,7 @@ nh_stack_resample <- function(rast, lookup, fact = 10, spf = NULL) {
                         uv <- uv[!is.na(uv)]
                         cats <- paste(lev$category[lev$ID %in% uv], collapse = "")
                         if (cats != "") {
-                          sp <- unique(stri_sub(cats, seq(1, stri_length(cats),by = len), length = len))
+                          sp <- sort(unique(stri_sub(cats, seq(1, stri_length(cats),by = len), length = len)))
                           sp <- paste(sp, collapse = "")
                         } else {
                           sp <- ""
@@ -250,7 +270,7 @@ nh_stack_resample <- function(rast, lookup, fact = 10, spf = NULL) {
                        uv <- uv[!is.na(uv)]
                        cats <- paste(lev$category[lev$ID %in% uv], collapse = "")
                        if (cats != "") {
-                         sp <- unique(stri_sub(cats, seq(1, stri_length(cats),by = len), length = len))
+                         sp <- sort(unique(stri_sub(cats, seq(1, stri_length(cats),by = len), length = len)))
                          sp <- paste(sp, collapse = "")
                        } else {
                          sp <- ""

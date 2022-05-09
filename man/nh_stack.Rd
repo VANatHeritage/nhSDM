@@ -4,7 +4,7 @@
 \alias{nh_stack}
 \title{Stack multiple binary SDM rasters into one raster layer}
 \usage{
-nh_stack(rastfiles, rast, codes = NULL, return.table = TRUE)
+nh_stack(rastfiles, rast, codes = NULL, return.table = TRUE, clip.feat = NULL)
 }
 \arguments{
 \item{rastfiles}{raster file names; character vector}
@@ -14,6 +14,8 @@ nh_stack(rastfiles, rast, codes = NULL, return.table = TRUE)
 \item{codes}{species codes; character vector. If given, must match length of \code{rastfiles}}
 
 \item{return.table}{Whether to return a table with nh_stack unique values, species codes, and filenames}
+
+\item{clip.feat}{sf data with masking features for rastfiles. Must have column named 'code', matching \code{codes}}
 }
 \value{
 RasterLayer
@@ -39,7 +41,7 @@ be pasted to the end of the original code, and a message will be printed.
 All rasters must have the same projection and resolution, though
 they can have different extents - the processing extent is defined by
 \code{rast}. To summarize all rasters across their
-entire extents, \code{template} should essentially be the union (mosaic) 
+entire extents, \code{rast} should essentially be the union (mosaic) 
 of all raster extents.
 
 When \code{return.table} is TRUE, a list with two objects (1), the 

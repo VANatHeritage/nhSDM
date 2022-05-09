@@ -1,4 +1,4 @@
-setwd("E:/git/nhSDM")
+setwd("D:/git/nhSDM")
 rm(list=ls())
 library(devtools)
 
@@ -23,4 +23,4 @@ build_pdf <- function() {
                sep = "")
   system(cmd)
 }
-build_pdf()
+# build_pdf()  # error in texi2pdf
