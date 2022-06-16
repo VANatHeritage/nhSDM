@@ -30,16 +30,16 @@
 #'
 #' @importFrom methods as
 #' @importFrom sf st_buffer st_area st_length st_cast st_union st_as_sf st_sfc st_sf
-#' @import raster
+#' @import terra
 #'
 #' @export
 #'
 #' @examples
 #' \dontrun{
-#' spf <- sf::st_read("inputs/species/ambymabe/polygon_data/ambymabe.shp")
-#' rast <- raster::raster("outputs/ambymabe/grids/ambymabe_20171018_130837.tif")
-#' rast <- raster::crop(rast, spf)
-#' best_polys <- nh_best(rast, spf)
+#' spf <- sf::st_read("_data/occurrence/ambymabe.shp")
+#' rast <- terra::rast("_data/species/ambymabe/outputs/model_predictions/ambymabe_20171018_130837.tif")
+#' rast <- terra::crop(rast, spf)
+#' best_polys <- nh_best(rast, spf, top.percent = 0.01, min.size = 10000, min.dist <- 10000, num.patches = 100, rank.by = "value")
 #' }
 
 nh_best <- function(rast, spf = NULL, top.percent = NULL, min.size = NULL, min.dist = NULL, num.patches = NULL, rank.by = 'area') {
@@ -58,9 +58,9 @@ nh_best <- function(rast, spf = NULL, top.percent = NULL, min.size = NULL, min.d
     message("Removing areas covered by 'spf'...")
     if (!is.null(min.dist)) {
       spf.buff <- st_buffer(spf, min.dist)
-      r <- mask(rast, as(spf.buff, "Spatial"), inverse = TRUE)
+      r <- mask(rast, vect(spf.buff), inverse = TRUE)
     } else {
-      r <- mask(rast, as(spf, "Spatial"), inverse = TRUE)
+      r <- mask(rast, vect(spf), inverse = TRUE)
     }
   } else {
     if (!is.null(min.dist)) message("Ignoring 'min.dist', as 'spf' is not specified.")
@@ -68,7 +68,6 @@ nh_best <- function(rast, spf = NULL, top.percent = NULL, min.size = NULL, min.d
   }
   
   vals <- as.matrix(r[])
-  
   if (!is.null(top.percent)) {
     top.percent <- top.percent/100
   } else {
@@ -100,15 +99,16 @@ nh_best <- function(rast, spf = NULL, top.percent = NULL, min.size = NULL, min.d
   
   # set values below cutoff to 0, convert to polys
   r[r < best] <- NA
-  spf.poly <- rasterToPolygons(r)
-  names(spf.poly) <- "mean_value"
+  # spf.poly <- rasterToPolygons(r)
+  spf.poly <- st_as_sf(as.polygons(r, dissolve=F, values=T))
+  names(spf.poly)[1] <- "mean_value"
   
   # dissolve adjacent, summarize value
   if (rank.by == "value") {
-    spf.gr <- st_cast(st_union(st_as_sf(spf.poly), by_feature = FALSE),"POLYGON") # dump to intersecting polygons
-    spf.out <- aggregate(st_as_sf(spf.poly), by = spf.gr, mean)
+    spf.gr <- st_cast(st_union(spf.poly, by_feature = FALSE),"POLYGON") # dump to intersecting polygons
+    spf.out <- aggregate(spf.poly, by = spf.gr, mean)
   } else {
-    spf.out <- st_sfc(st_cast(st_union(st_as_sf(spf.poly), by_feature = FALSE),"POLYGON")) # dump to intersecting polygons
+    spf.out <- st_sfc(st_cast(st_union(spf.poly, by_feature = FALSE),"POLYGON")) # dump to intersecting polygons
     spf.out <- st_sf(geometry=spf.out)
   }
   # add columns

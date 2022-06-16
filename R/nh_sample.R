@@ -46,9 +46,8 @@
 #'
 #' @examples
 #' \dontrun{
-#' rast <-terra::rast("env_vars/raster/AnnMnTemp.tif")
-#' # spf <- rgdal::readOGR("species/ambymabe/inputs/presence", "ambymabe_expl")
-#' spf <- sf::st_read("species/ambymabe/inputs/presence/ambymabe_expl.shp")
+#' spf <- sf::st_read("_data/occurrence/ambymabe.shp")
+#' rast <- terra::rast("_data/species/ambymabe/outputs/model_predictions/ambymabe_20171018_130837.tif")
 #' spf$num.samps <- sample(1:5, nrow(spf), replace = T)
 #' spf.samps <- nh_sample(spf, rast, num.samps =spf$num.samps, replace = F, force.min = T)
 #' nrow(spf.samps) == sum(spf$num.samps)  # Should be TRUE when force.min = T.
@@ -71,7 +70,7 @@ nh_sample <- function(spf, rast, num.samps = NULL, replace = FALSE, force.min = 
     }
   }
 
-  # seq raster
+  # make seq raster
   r1 <- crop(rast, st_sf(st_buffer(st_as_sfc(st_bbox(spf)), dist = res(rast)[1]))) # crop to 1-cell buffered extent of spf
   r2 <- r1
   values(r2) <- 1:ncell(r1)

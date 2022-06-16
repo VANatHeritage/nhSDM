@@ -9,8 +9,7 @@ nh_patchdrop(
   rast,
   min.patch = NULL,
   directions = 8,
-  updatevalue = 0,
-  ...
+  updatevalue = 0
 )
 }
 \arguments{
@@ -23,11 +22,9 @@ nh_patchdrop(
 \item{directions}{Integer. Which cells are considered adjacent? Should be 8 (default; Queen's case) or 4 (Rook's case). From \code{raster::clump}}
 
 \item{updatevalue}{Integer or NA. Value to apply to cells which do not meet the min.patch size. Default = 0.}
-
-\item{...}{Other arguments as to \code{raster::writeRaster}}
 }
 \value{
-RasterLayer
+SpatRaster
 }
 \description{
 Takes a binary/thresholded raster (values either NA, 0, or 1), and 
@@ -41,15 +38,15 @@ not given, a 'min.patch' value must be given, in area units of the input raster.
 }
 \examples{
 \dontrun{
-spf <- st_read("ambymabe/polygon_data/ambymabe.shp")
-rast <- raster("screen_lpsh/thumb/ambymabe.tif")
+spf <- sf::st_read("_data/occurrence/ambymabe.shp")
+rast <- terra::rast("_data/species/ambymabe/outputs/model_predictions/ambymabe_20171018_130837.tif")
+values(rast) <- ifelse(values(rast) > 0.9, 1, NA)
 
 # use minimum patch size from presence features
 rast_contig_minpres <- nh_patchdrop(spf, rast)
 
 # use a minimum patch size of 10000 (in units from 'rast')
-rast_contig_10km <- nh_patchdrop(rast = rast, min.patch = 10000,
- filename = "rast_contig_10km.tif", datatype = "INT2U")
+rast_contig_10km <- nh_patchdrop(rast = rast, min.patch = 10000)
 }
 }
 \author{

@@ -11,7 +11,6 @@
 #' 
 #' @importFrom sf st_as_sf st_geometry st_zm st_crs st_transform st_crs<-
 #' @importFrom methods as
-#' @importFrom raster projection
 #' 
 #' @keywords internal
 
@@ -28,46 +27,37 @@ tospf <- function(spf, rastproj) {
   spf$geometry <- st_geometry(spf) 
   spf <- st_zm(st_set_geometry(spf, "geometry"))
   spf$geom <- NULL
-  
   # spf <- st_zm(spf)
 
   # transform if necessary
   if (!missing(rastproj)) {
     if (!is.na(st_crs(spf)$proj4string)) {
-      if (st_crs(spf)$proj4string != st_crs(rastproj)$proj4string) spf <- st_transform(spf, crs = st_crs(rastproj)$proj4string)
+      if (st_crs(spf)$proj4string != st_crs(rastproj)$proj4string) spf <- st_transform(spf, crs = st_crs(rastproj))
     } else {
       message("No projection on input features. Assuming features are using raster's projection...")
-      st_crs(spf) <- projection(rastproj)
+      st_crs(spf) <- st_crs(rastproj)
     }
   }
-  
   return(list(sp,spf))
 }
 
 # gRasterize
 #'
-#' Rasterize with temp file parameters and all polygon values = 1
+#' Rasterize features
 #' 
-#' A temporary raster and shapefile are created in the raster temp directory, and 
-#' deleted. 
+#' This is a wrapper around terra::rasterize, used internally in nh_burn and nh_stack.
 #' 
-#' This is used internally in nh_burn instead of raster::rasterize, which was found to
-#' be very slow for large and/or many feature rasterizing. In some cases a 
-#' 'striping' was noticed in the resulting raster, in areas where there were no features.
-#' 
-#' Previous versions used GDAL, now uses R package fasterize.
 #' 
 #' @param spf input sf or sp object
-#' @param rast raster dataset with desired output projection, extent, cell size
+#' @param rast terra raster dataset with desired output projection, extent, cell size
 #' @param value integer value to apply to areas covered by spf
 #' @param background value to apply to areas not covered by spf
 #' 
-#' @return raster object
+#' @return rast object
 #' 
-#' @import raster
+#' @import terra
 #' @importFrom sf st_buffer st_cast
 #' @importFrom methods as
-#' @importFrom fasterize fasterize
 #' 
 #' @keywords internal
 
@@ -76,15 +66,18 @@ gRasterize <- function(spf, rast, value = 1, background = NA) {
   # handle sp/sf class
   spf <- tospf(spf, rast)[[2]]
   
-  # fasterize needs polygons
-  if (grepl("POINT|LINESTRING", st_geometry_type(spf)[1]))
-    spf <- st_cast(st_buffer(spf, res(rast)[1]*sqrt(2) / 2), "MULTIPOLYGON")
+  # DEPRECATED: fasterize needed polygons; terra::rasterize does not.
+  # if (grepl("POINT|LINESTRING", st_geometry_type(spf)[1])) {
+  #   spf <- st_cast(st_buffer(spf, res(rast)[1]*sqrt(2) / 2), "MULTIPOLYGON")
+  # }
+  
   if (is.numeric(value)) {
-      spf$burnval <- value
-    } else {
-      spf$burnval <- as.data.frame(spf)[,value]
-    }
-  rast <- fasterize(spf, rast, field = "burnval", fun = "max")
+    spf$burnval <- value
+  } else {
+    spf$burnval <- as.data.frame(spf)[,value]
+  }
+  rast <- rasterize(vect(spf), rast, field="burnval", background=background)
+  # rast <- fasterize(spf, rast, field = "burnval", fun = "max")
   return(rast)
 }
 

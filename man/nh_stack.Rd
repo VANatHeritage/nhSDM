@@ -2,7 +2,7 @@
 % Please edit documentation in R/nh_stack.R
 \name{nh_stack}
 \alias{nh_stack}
-\title{Stack multiple binary SDM rasters into one raster layer}
+\title{Stack multiple binary SDM rasters into one raster layer, using terra}
 \usage{
 nh_stack(rastfiles, rast, codes = NULL, return.table = TRUE, clip.feat = NULL)
 }
@@ -18,7 +18,7 @@ nh_stack(rastfiles, rast, codes = NULL, return.table = TRUE, clip.feat = NULL)
 \item{clip.feat}{sf data with masking features for rastfiles. Must have column named 'code', matching \code{codes}}
 }
 \value{
-RasterLayer
+SpatRaster
 }
 \description{
 Takes a \code{rastfiles} of binary raster's filenames (values 0/1), 
@@ -51,13 +51,14 @@ is required for resampling the stack (i.e. with \code{nh_stack_resample}).
 }
 \examples{
 \dontrun{
-rast<-raster::raster("project_mask.tif")
-list <- sort(list.files(paste0(rastout, t, "/thumb"), full.names = T,
- pattern = "^[[:lower:]]{5,12}\\\\.tif$"))
+setwd("D:/PSH")
+rast <- rast("inputs/_masks/data_mask.tif")
+list <- sort(list.files(paste0("proj_psh/thumb"), full.names = T, pattern = ".tif$"))
+rastfiles <- c(list[sample(1:length(list), size=5)], "proj_psh/thumb/helevirg_10Aug2018.tif", "proj_psh/thumb/myotsoda_10May2018.tif")
+codes <- unlist(lapply(basename(rastfiles), function(x) strsplit(x, "_")[[1]][1]))
 
-stack <- nh_stack(list, rast)
-# view raster attribute table
-levels(stack[[1]])
+stack <- nh_stack(rastfiles, rast, codes = NULL)
+cats(stack[[1]])
 }
 }
 \author{

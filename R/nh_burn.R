@@ -1,24 +1,17 @@
 # nh_burn
 
-#' Add areas represented by features ('burn-in') to a binary raster SDM output
+#' Add areas represented by features ('burn-in') to a binary raster SDM output, 
+#' plus areas within a buffer distance above specified threshold
 #' 
 #' Takes spatial features, a continuous raster (values between 0 and 1), and 
-#' returns a classified binary (0/1) raster. Areas greater than \code{orig.thresh} are
-#' set to 1, all others 0. Areas intersecting \code{spf} features
-#' are assigned a value of 1 in the returned classified raster. See details
-#' for default calculation of \code{orig.thresh} and usage of \code{buffer}.
+#' returns a classified binary (0/1) raster. Areas intersecting \code{spf} features
+#' are assigned a value of 1 in the returned classified raster. Additional, areas
+#' within \code{buffer} distance of \code{spf} and above the threshold are set to 1. 
+#' See details for default calculation of \code{orig.thresh} and usage of \code{buffer}.
 #' 
 #' When \code{buffer} is used or \code{orig.thresh} is not provided,
-#' a minimum cell value (min.cell) across all \code{spf} is calculated.
-#' The min.cell value will be used as a threshold
-#' for the full raster, or just areas within \code{buffer} distance of \code{spf},
-#' if \code{buffer} is greater than 0.
-#' 
-#' If \code{buffer} is greater than 0 and \code{orig.thresh} is not NULL, \code{orig.thresh}
-#' is used as the threshold for the full raster. Additionally,
-#' cells within \code{buffer} distance of \code{spf} which are greater than the
-#' calculated min.cell value are also set to 1. If a given \code{orig.thresh} is lower 
-#' than the calculated min.cell value, \code{buffer} will have no impact on the output.
+#' a minimum cell value (min.cell) of values within \code{spf} is calculated and 
+#' used as the threshold.
 #' 
 #' The default is to return the raster only. If \code{return.thresh = TRUE}, the function will
 #' return a list with 3 named objects: \code{rast}, the output raster; \code{orig.thresh}, 
@@ -26,16 +19,16 @@
 #'
 #' @param spf input spatial features (sp or sf spatial object)
 #' @param rast input raster model output (values between 0 and 1)
-#' @param orig.thresh numeric between 0 and 1; 'global' threshold value to apply to raster
-#' @param buffer numeric; spatial buffer around spf to include in burn-in
+#' @param orig.thresh numeric between 0 and 1; threshold value to apply to raster
+#' @param buffer numeric; spatial buffer distance around spf where threshold will be applied.
 #' @param return.thresh logical; whether to return thresholds along with raster in a list
 #' @param ... Other arguments as to \code{raster::writeRaster}
 #' 
-#' @return RasterLayer
+#' @return SpatRaster
 #' 
 #' @author David Bucklin
 #' 
-#' @import raster
+#' @import terra
 #' @importFrom methods as
 #' @importFrom sf st_buffer
 #'
@@ -43,12 +36,12 @@
 #'
 #' @examples
 #' \dontrun{
-#' spf <- st_read("ambymabe/polygon_data/ambymabe.shp")
-#' rast <- raster("ambymabe/grids/ambymabe_20171018_130837.tif")
-#' class_burn <- nh_burn(spf, rast, 0.75, 250, filename = "model_classified.tif", datatype = "INT2U")
+#' spf <- sf::st_read("_data/occurrence/ambymabe.shp")
+#' rast <- terra::rast("_data/species/ambymabe/outputs/model_predictions/ambymabe_20171018_130837.tif")
+#' class_burn <- nh_burn(spf, rast, 0.75, buffer = 0)
 #' }
 
-nh_burn <- function(spf, rast, orig.thresh = NULL, buffer = 0, return.thresh = FALSE, ...) {
+nh_burn <- function(spf, rast, orig.thresh = NULL, buffer = NA, return.thresh = FALSE, ...) {
   
   if (!is.null(orig.thresh) && (orig.thresh > 1 | orig.thresh < 0)) stop("orig.thresh value must be between 0 and 1.")
   if (is.null(orig.thresh)) omiss <- TRUE else omiss <- FALSE
@@ -65,25 +58,28 @@ nh_burn <- function(spf, rast, orig.thresh = NULL, buffer = 0, return.thresh = F
   # spf <- st_buffer(spf, sqrt(2)*(csz/2)) # use this to add cellsize buffer always ensure capture of all intersecting cells (not just cell centers)
   
   # crop, extract minimum value in spf
-  r1 <- crop(rast, extent(extent(spf)[1]-(csz+buffer), extent(spf)[2]+(csz+buffer), extent(spf)[3]-(csz+buffer), extent(spf)[4]+(csz+buffer)))
+  if (!is.na(buffer)) 
+    r1 <- crop(rast, ext(ext(spf)[1]-(csz+buffer), ext(spf)[2]+(csz+buffer), ext(spf)[3]-(csz+buffer), ext(spf)[4]+(csz+buffer))) else 
+    r1 <- rast
+  
   # update area within features
   message("Updating feature intersection areas...")
   r2 <- gRasterize(spf, r1, value = 1) # sets = 1 areas within original features
   
-  if (buffer == 0 & !is.null(orig.thresh)) {
+  if (is.na(buffer) & !is.null(orig.thresh)) {
     # case when buffer is 0 and threshold is given - simple burn in
     message("Burning in features...")
     rburn <- max(rast, extend(r2,rast), na.rm = T)
     rcl <- data.frame(from = c(NA, -1, orig.thresh-1e-10), to = c(NA, orig.thresh-1e-10, 1.1), becomes = c(NA,0,1)) # subtract very small number from threshold
     message("Reclassifying raster...")
-    rast <- reclassify(rburn, rcl, ...)
+    rast <- classify(rburn, rcl)
     if (!return.thresh) return(rast) else return(list(rast = rast, orig.thresh = orig.thresh, min.cell = NA))
   } else {
     if (is.null(orig.thresh)) {
       orig.thresh <- NA
       # other cases where orig.thresh not given, calculate the minimum value within features
       message("Calculating minimum value in features...")
-      mval <- min(unlist(extract(r1, spf)), na.rm = T)
+      mval <- min(extract(r1, vect(spf))[,2], na.rm = T)
       message("Calculated minimum value threshold = ", mval)
     } else {
       mval <- NA
@@ -93,7 +89,7 @@ nh_burn <- function(spf, rast, orig.thresh = NULL, buffer = 0, return.thresh = F
   # set threshold to use
   if(!omiss) tuse <- orig.thresh else tuse <- mval
     
-  if (buffer > 0) {
+  if (!is.na(buffer)) {
     message("Reclassifying buffer areas using threshold...")
     spfb <- st_buffer(spf, buffer)
     r3 <- gRasterize(spfb, r2, value = 1, background = NA) # buffer area
@@ -101,15 +97,16 @@ nh_burn <- function(spf, rast, orig.thresh = NULL, buffer = 0, return.thresh = F
     # find areas in buffer area above mval, set to 1
     values(r2) <- ifelse(test = values(r1+r2) > (tuse+1), yes = 1, no = NA)
     # r2 is now areas of original features + buffer areas > tuse
-    r2[is.na(r2)] <- 0
-    rast <- mask(extend(r2, rast, value = 0), rast, ...)
+    r3 <- extend(r2, rast)
+    r3[is.na(r3)] <- 0
+    rast <- mask(r3, rast)
     if (!return.thresh) return(rast) else return(list(rast = rast, orig.thresh = orig.thresh, min.cell = mval))
   } else {
     message("Reclassifying raster...")
     # reclassify
     rcl <- data.frame(from = c(NA, -1, tuse-1e-10), to = c(NA, tuse-1e-10, 1.1), becomes = c(NA,0,1)) # subtract very small number from threshold
     rburn <- max(rast, extend(r2,rast), na.rm = T)
-    rast <- reclassify(rburn, rcl, ...)
+    rast <- classify(rburn, rcl)
     if (!return.thresh) return(rast) else return(list(rast = rast, orig.thresh = orig.thresh, min.cell = mval))
   }
 

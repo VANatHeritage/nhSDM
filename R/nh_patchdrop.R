@@ -15,32 +15,32 @@
 #' @param min.patch area of minimum patch size, in area units used in \code{rast}
 #' @param directions Integer. Which cells are considered adjacent? Should be 8 (default; Queen's case) or 4 (Rook's case). From \code{raster::clump}
 #' @param updatevalue Integer or NA. Value to apply to cells which do not meet the min.patch size. Default = 0.
-#' @param ... Other arguments as to \code{raster::writeRaster}
 #' 
-#' @return RasterLayer
+#' @return SpatRaster
 #' 
 #' @author David Bucklin
 #'
 #' @importFrom methods as
 #' @importFrom sf st_area
-#' @import raster
+#' @import terra
 #'
 #' @export
 #'
 #' @examples
 #' \dontrun{
-#' spf <- st_read("ambymabe/polygon_data/ambymabe.shp")
-#' rast <- raster("screen_lpsh/thumb/ambymabe.tif")
+#' spf <- sf::st_read("_data/occurrence/ambymabe.shp")
+#' rast <- terra::rast("_data/species/ambymabe/outputs/model_predictions/ambymabe_20171018_130837.tif")
+#' values(rast) <- ifelse(values(rast) > 0.9, 1, NA)
 #' 
 #' # use minimum patch size from presence features
 #' rast_contig_minpres <- nh_patchdrop(spf, rast)
 #' 
 #' # use a minimum patch size of 10000 (in units from 'rast')
-#' rast_contig_10km <- nh_patchdrop(rast = rast, min.patch = 10000,
-#'  filename = "rast_contig_10km.tif", datatype = "INT2U")
+#' rast_contig_10km <- nh_patchdrop(rast = rast, min.patch = 10000)
 #' }
 
-nh_patchdrop <- function(spf = NULL, rast, min.patch = NULL, directions = 8, updatevalue=0, ...) {
+nh_patchdrop <- function(spf = NULL, rast, min.patch = NULL, directions = 8, updatevalue=0) {
+  # ISSUE: clump/patches functions are incredibly slow. Likely not using.
   
   if (!"igraph" %in% installed.packages()) stop("The package 'igraph' is required for this function.")
   if (is.null(spf) & is.null(min.patch)) stop("Must provide either spatial features (spf) or min.patch size.")
@@ -67,11 +67,13 @@ nh_patchdrop <- function(spf = NULL, rast, min.patch = NULL, directions = 8, upd
   }
   
   # run clump
+  message("Finding contiguous patches...")
   if (sum(rast[1:nrow(rast), 1], na.rm=T) > 0) {
     # extend to break grouping from one x-edge to another, when there are some values 
-    r2 <- crop(clump(extend(rast, y=c(1,1)), directions = directions), rast) 
+    # r2 <- crop(clump(extend(rast, y=c(1,1)), directions = directions), rast) 
+    r2 <- crop(patches(extend(rast, y=c(1,1)), directions = directions), rast) 
   } else {
-    r2 <- clump(rast, directions = directions)
+    r2 <- patches(rast, directions = directions)
   }
   
   # figure out what to drop
@@ -84,6 +86,6 @@ nh_patchdrop <- function(spf = NULL, rast, min.patch = NULL, directions = 8, upd
   
   r2[r2 %in% drop$value] <- NA
 
-  rout <- mask(rast, r2, updatevalue = updatevalue, ...)
+  rout <- mask(rast, r2, updatevalue = updatevalue)
   return(rout)
 }

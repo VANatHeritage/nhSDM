@@ -30,7 +30,7 @@ nh_map(
 \item{patch.drop}{patch size (in \code{rast} area units) to remove from map}
 }
 \value{
-RasterLayer
+SpatRaster
 }
 \description{
 This function performs a reclassification of a continuous map to a binary one,
@@ -47,14 +47,17 @@ minimum patch size to \code{patch.drop} in area units of the raster's CRS
 (see nhSDM::nh_patchdrop). 
 
 The final step is to 'burn in' (rasterize with value = 1) features 
-from \code{feature.occ} and \code{feature.burn}. Since this is the last step, it is not
+from \code{feature.occ} and \code{feature.burn}. Because it is the last step, it is not
 affected by masks or patch dropping.
 }
 \examples{
 \dontrun{
-spf <- st_read("ambymabe/polygon_data/ambymabe.shp")
-rast <- raster("ambymabe/grids/ambymabe_20171018_130837.tif")
-map <- nh_map(rast, 0.75, feature.occ = spf)
+spf <- sf::st_read("_data/occurrence/ambymabe.shp")
+rast <- terra::rast("_data/species/ambymabe/outputs/model_predictions/ambymabe_20171018_130837.tif")
+feature.burn <- st_buffer(spf, 250)
+feature.mask <- st_buffer(spf, 50000)
+raster.mask <- rast("D:/PSH/inputs/species_masks/no_med_hi_dev/no_med_hi_dev.tif")
+map <- nh_map(rast, thresh=0.75, feature.occ=spf, feature.burn=feature.burn, feature.mask=feature.mask, raster.mask=raster.mask, NULL)
 }
 }
 \author{

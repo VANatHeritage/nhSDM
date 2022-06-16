@@ -16,7 +16,7 @@ nh_stack_resample(rast, lookup, fact = 10, spf = NULL)
 \item{spf}{Optional vector spatial features to use for aggregation (sp or sf-class polygons). If supplied, \code{fact} will be ignored}
 }
 \value{
-RasterLayer
+SpatRaster or spf (with attributes added)
 }
 \description{
 Takes an output raster from nh_stack, and returns a lower-resolution
@@ -35,13 +35,14 @@ is done in the raster's projection.
 }
 \examples{
 \dontrun{
-stack <- nh_stack(list, rast, return.table = TRUE)
+# stack <- nh_stack(list, rast, return.table = TRUE)
 
 # resample from 30m to 990m (~1km) resolution
 stack1km <- nh_stack_resample(stack[[1]], stack[[2]], fact = 33)
+cats(stack1km)
 
-# view species count raster
-ct <- deratify(stack1km, att = "ALLCODES_CT")
+# view species count raster (index=3 is the 'ALLCODES_CT' column)
+ct <- as.numeric(stack1km, index=3)
 plot(ct)
 }
 }

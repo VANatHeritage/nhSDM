@@ -8,17 +8,18 @@
 #' 
 #' @param rast input raster
 #' 
-#' @return RasterLayer
+#' @return SpatRaster
 #' 
 #' @author David Bucklin
 #' 
-#' @import raster
+#' @import terra
 #'
 #' @export
 #'
 #' @examples
 #' \dontrun{
-#' rast <- rast <- raster("ambymabe_16May2018.tif")
+#' rast <- terra::rast("_data/species/ambymabe/outputs/model_predictions/ambymabe_20171018_130837.tif")
+#' values(rast) <- ifelse(values(rast) > 0.3, 1, NA)
 #' rast.crop <- nh_crop(rast)
 #' 
 #' # should be TRUE
@@ -26,7 +27,7 @@
 #' }
 
 nh_crop <- function(rast) {
-  
+  message("Cropping extra rows/columns...")
   system.time(v <- values(rast))
   vl <- length(v)
   row.all <- seq(1, vl, by=ncol(rast))
@@ -44,7 +45,6 @@ nh_crop <- function(rast) {
     if (sum(v[x:xe], na.rm = T) > 0) break
   }
   if (i == length(row.all)) y1 <- i else y1 <- i+1
-  
   # left
   col.all <- 1:ncol(rast)
   for (i in 1:length(col.all)) {
@@ -61,8 +61,8 @@ nh_crop <- function(rast) {
   }
   if (i == length(col.all)) x1 <- i else x1 <- i+1
   
-  cr <- extent(rast, y0, y1, x0, x1)
-  message("Cropping extra rows/columns...")
-  rout <- crop(rast, cr)
+  # cr <- extent(rast, y0, y1, x0, x1)
+  rout <- rast[y0:y1, x0:x1, drop=FALSE]
+  # rout <- crop(rast, cr)
   return(rout)
 }

@@ -1,6 +1,6 @@
 # nh_stack
 
-#' Stack multiple binary SDM rasters into one raster layer
+#' Stack multiple binary SDM rasters into one raster layer, using terra
 #' 
 #' Takes a \code{rastfiles} of binary raster's filenames (values 0/1), 
 #' a template raster covering the extent desired for the stack, 
@@ -35,27 +35,29 @@
 #' @param return.table Whether to return a table with nh_stack unique values, species codes, and filenames
 #' @param clip.feat sf data with masking features for rastfiles. Must have column named 'code', matching \code{codes}
 #' 
-#' @return RasterLayer
+#' @return SpatRaster
 #' 
 #' @author David Bucklin
 #'
-#' @import raster
+#' @import terra
 #' @importFrom stringi stri_rand_strings stri_length stri_sub
 #' @importFrom sf st_transform st_crs
 #' @export
 #'
 #' @examples
 #' \dontrun{
-#' rast<-raster::raster("project_mask.tif")
-#' list <- sort(list.files(paste0(rastout, t, "/thumb"), full.names = T,
-#'  pattern = "^[[:lower:]]{5,12}\\.tif$"))
+#' setwd("D:/PSH")
+#' rast <- rast("inputs/_masks/data_mask.tif")
+#' list <- sort(list.files(paste0("proj_psh/thumb"), full.names = T, pattern = ".tif$"))
+#' rastfiles <- c(list[sample(1:length(list), size=5)], "proj_psh/thumb/helevirg_10Aug2018.tif", "proj_psh/thumb/myotsoda_10May2018.tif")
+#' codes <- unlist(lapply(basename(rastfiles), function(x) strsplit(x, "_")[[1]][1]))
 #'
-#' stack <- nh_stack(list, rast)
-#' # view raster attribute table
-#' levels(stack[[1]])
+#' stack <- nh_stack(rastfiles, rast, codes = NULL)
+#' cats(stack[[1]])
 #' }
 
 nh_stack <- function(rastfiles, rast, codes = NULL, return.table = TRUE, clip.feat = NULL) {
+  # Works with terra.
   
   list <- rastfiles
   if (!is.null(codes) & length(codes) != length(list)) stop("`codes` length must match `rastfiles` length.")
@@ -69,8 +71,8 @@ nh_stack <- function(rastfiles, rast, codes = NULL, return.table = TRUE, clip.fe
   
   message("Prepping template raster...")
   if (ncell(rast) > 2.147e+9) stop("Raster template dimensions too large, will need to process in blocks.")
-  rcont <- setValues(raster(rast), 1:ncell(rast))
-  dataType(rcont) <- "INT4S"
+  rcont <- setValues(rast(rast), 1:ncell(rast))
+  # dataType(rcont) <- "INT4S"
   
   # make unique codes
   sz <- length(list)
@@ -79,7 +81,7 @@ nh_stack <- function(rastfiles, rast, codes = NULL, return.table = TRUE, clip.fe
   cd <- character(0)
   while (length(cd) < sz) {
     len <- len + 1
-    cd <- unique(stri_rand_strings(sz * 10, len, pattern = "[a-z0-9]"))  
+    cd <- unique(stri_rand_strings(sz * 10, len, pattern = "[a-z0-9]"))
   }
   # get codes for length you need
   stk_order <- data.frame(uval = sample(cd, size = sz, replace = F), code_nm = NA, file = list)
@@ -91,10 +93,14 @@ nh_stack <- function(rastfiles, rast, codes = NULL, return.table = TRUE, clip.fe
     # get nh_stack uval
     spcd <- stk_order$uval[i]
     # get/crop raster
-    r <- raster(stk_order$file[i])
-    r <- crop(r, rcont)
+    r.orig <- rast(stk_order$file[i])
+    r <- crop(r.orig, rcont)
     # assign long code name
-    if (!is.null(codes)) names(r) <- codes[i]
+    if (!is.null(codes)) {
+      names(r) <- codes[i]
+    } else {
+      names(r) <- r.orig@ptr$get_sourcenames()
+    }
     if (names(r) %in% stk_order$code_nm) {
       message("Non-unique code '", names(r), "' changed to '",paste0(names(r), "_", spcd),"'.")
       names(r) <- paste0(names(r), "_", spcd)
@@ -102,48 +108,42 @@ nh_stack <- function(rastfiles, rast, codes = NULL, return.table = TRUE, clip.fe
     message(paste0("\nWorking on raster ", names(r), "..."), appendLF = F)
     stk_order$code_nm[stk_order$uval == spcd] <- names(r)
     
-    # Clip adjust procedure
+    # Clip/mask procedure
     if (!is.null(clip.feat)) {
       c1 <- clip[clip$code==names(r),]
       if (nrow(c1) == 1) {
         message('Clipping...', appendLF = F)
-        rc <- crop(r, c1)
-        c1rast <- fasterize(c1, raster = rc)
-        r <- mask(rc, c1rast, updatevalue=0)
+        r <- mask(crop(r, c1), vect(c1), touches = F)  # Terra accepts vectors for masking
       }
     }
-    
     # crop/mask continuous raster, get values
     cr <- crop(rcont, r, datatype = "INT4S")
     rval <- values(r)
     v <- values(cr)[!is.na(rval) & rval==1]
     
-    # old version, this didn't like NA values in mask
-    # rval <- mask(cr, r, maskvalue = 1, inverse = T, datatype = "INT4S")
-    # v <- values(rval)
-    # v <- v[!is.na(v)]
-
     # paste to bigd
     if (length(v) > 0) bigd[v] <- paste0(bigd[v], spcd) 
   }
   
+  # Get unique values
+  uvals <- data.frame(CODE=unique(bigd))
+  uvals$VALUE <- 1:nrow(uvals)  # VALUE must be numeric to work with ArcGIS (will create attribute table)
+  bigd2 <- match(bigd, uvals$CODE)
+  
   message("\nCalculating stack attributes...")
-  r2 <- setValues(raster(rcont), as.factor(bigd))
-
-  # get unique values
-  uvals <- levels(r2)[[1]]
+  r2 <- setValues(rast(rcont), bigd2)
   
   # parse
-  pars <- lapply(uvals$VALUE, 
+  pars <- lapply(uvals$CODE, 
                  function(x) if (stri_length(x) > len) stri_sub(x, from = seq(1, stri_length(x), by = len), length = len) else x)
   parssp <- unlist(lapply(pars, function(x) paste(stk_order$code_nm[stk_order$uval %in% x], collapse = ";")))
   parsct <- unlist(lapply(pars, length))
   
   uvals$ALLCODES <- parssp
   uvals$ALLCODES_CT <- parsct
-  uvals$ALLCODES_CT[uvals$VALUE == ""] <- 0
+  uvals$ALLCODES_CT[uvals$CODE == ""] <- 0
   
-  levels(r2) <- uvals
+  levels(r2) <- uvals[c("VALUE", "CODE", "ALLCODES", "ALLCODES_CT")]
   names(r2) <- "nh_stack"
   
   if (return.table) {
@@ -153,7 +153,6 @@ nh_stack <- function(rastfiles, rast, codes = NULL, return.table = TRUE, clip.fe
     return(r2)
   }
 }
-
 
 # nh_stack_resample
 
@@ -177,11 +176,11 @@ nh_stack <- function(rastfiles, rast, codes = NULL, return.table = TRUE, clip.fe
 #' @param fact aggregation factor, in number of cells (see \code{?raster::aggregate})
 #' @param spf Optional vector spatial features to use for aggregation (sp or sf-class polygons). If supplied, \code{fact} will be ignored
 #' 
-#' @return RasterLayer
+#' @return SpatRaster or spf (with attributes added)
 #' 
 #' @author David Bucklin
 #'
-#' @import raster
+#' @import terra
 #' @importFrom stringi stri_rand_strings stri_length stri_sub
 #' @importFrom methods as
 #' @importFrom sf st_crs st_as_sfc st_intersects st_bbox st_intersects st_transform
@@ -189,27 +188,28 @@ nh_stack <- function(rastfiles, rast, codes = NULL, return.table = TRUE, clip.fe
 #'
 #' @examples
 #' \dontrun{
-#' stack <- nh_stack(list, rast, return.table = TRUE)
+#' # stack <- nh_stack(list, rast, return.table = TRUE)
 #' 
 #' # resample from 30m to 990m (~1km) resolution
 #' stack1km <- nh_stack_resample(stack[[1]], stack[[2]], fact = 33)
+#' cats(stack1km)
 #' 
-#' # view species count raster
-#' ct <- deratify(stack1km, att = "ALLCODES_CT")
+#' # view species count raster (index=3 is the 'ALLCODES_CT' column)
+#' ct <- as.numeric(stack1km, index=3)
 #' plot(ct)
 #' }
 
 nh_stack_resample <- function(rast, lookup, fact = 10, spf = NULL) {
-  
   # split length
   len <- unique(nchar(lookup$nh_stack_uval))
   # get levels
-  lev <- levels(rast)[[1]]
+  lev <- cats(rast)[[1]]
+  # lev <- levels(rast)[[1]]
   names(lev)[1:2] <- c("ID", "category")
   
   # aggregate
-  vals <- c()
-
+  spp <- c()
+  
   if (is.null(spf)) {
     # check fact
     if (all(fact < 2)) {
@@ -228,21 +228,24 @@ nh_stack_resample <- function(rast, lookup, fact = 10, spf = NULL) {
                         uv <- uv[!is.na(uv)]
                         cats <- paste(lev$category[lev$ID %in% uv], collapse = "")
                         if (cats != "") {
-                          sp <- sort(unique(stri_sub(cats, seq(1, stri_length(cats),by = len), length = len)))
+                          sp <- sort(unique(stri_sub(cats, seq(1, stri_length(cats), by = len), length = len)))
                           sp <- paste(sp, collapse = "")
                         } else {
                           sp <- ""
                         }
                       }
-                      vals <<- c(vals, sp)
-                      # return(as.factor(sp)) # gets a cryptic error with larger rasters...
-                      # if this worked, could just return as factor and not need to set values in next step, but speed is essentially the same
-                      return(1)
-                    }, expand = TRUE)
-    values(r1) <- as.factor(vals)
-    
-    # get levels
-    uvals <- levels(r1)[[1]]
+                      if (!is.na(sp)) {
+                        if (!sp %in% spp) spp <<- c(spp, sp)
+                        val <- match(sp, spp)
+                        return(val)
+                      } else{
+                        return(NA)
+                      }
+                    })
+    # Make levels data frame
+    rcats <- data.frame(VALUE = 1:length(spp), CODE = spp)
+    levels(r1) <- rcats
+    uvals <- cats(r1)[[1]]
   } else {
     proj <- st_crs(spf)
     # handle sp/sf class
@@ -258,54 +261,52 @@ nh_stack_resample <- function(rast, lookup, fact = 10, spf = NULL) {
     # add ID
     spf$burnval <- 1:length(spf$geometry)
     zonr <- gRasterize(spf, rast, value = "burnval")
-
-    message("Aggregating stack by polygons...")
     
+    message("Aggregating stack by polygons...")
     zon <- as.data.frame(zonal(rast, zonr,
-                   fun = function(x, ...) {
-                     uv <- unique(x)
-                     if (all(is.na(uv))) {
-                       sp <- NA
-                     } else {
-                       uv <- uv[!is.na(uv)]
-                       cats <- paste(lev$category[lev$ID %in% uv], collapse = "")
-                       if (cats != "") {
-                         sp <- sort(unique(stri_sub(cats, seq(1, stri_length(cats),by = len), length = len)))
-                         sp <- paste(sp, collapse = "")
-                       } else {
-                         sp <- ""
-                       }
-                     }
-                     vals <<- c(vals, sp)
-                     return(1) # gets a cryptic error with larger rasters...
-                     # if this worked, could just return as factor and not need to set values in next step, but speed is essentially the same
-                     # return(1)
-                   }))
-    zon$value <- vals
-    polys2 <- merge(spf, zon, by.x = "burnval", by.y = "zone")
+                               fun = function(x, ...) {
+                                 uv <- unique(x)
+                                 if (all(is.na(uv))) {
+                                   sp <- NA
+                                 } else {
+                                   uv <- uv[!is.na(uv)]
+                                   cats <- paste(lev$category[lev$ID %in% uv], collapse = "")
+                                   if (cats != "") {
+                                     sp <- sort(unique(stri_sub(cats, seq(1, stri_length(cats),by = len), length = len)))
+                                     sp <- paste(sp, collapse = "")
+                                   } else {
+                                     sp <- ""
+                                   }
+                                 }
+                                 spp <<- c(spp, sp)
+                                 return(1)
+                               }))
+    zon$code <- spp
+    polys2 <- merge(spf, zon, by.x = "burnval", by.y = "burnval")
     polys2$burnval <- NULL
-  
-    uvals <- data.frame(VALUE = unique(polys2$value)[!is.na(unique(polys2$value))])
+    polys2$nh_stack <- NULL
+    
+    uvals <- data.frame(CODE = unique(polys2$code)[!is.na(unique(polys2$code))])
   }
   
   message("Calculating stack attributes...")
   # species lookup
   stk_order <- lookup
   # parse
-  pars <- lapply(uvals$VALUE, 
+  pars <- lapply(uvals$CODE, 
                  function(x) if (stri_length(x) > len) stri_sub(x, from = seq(1, stri_length(x), by = len), length = len) else x)
   parssp <- unlist(lapply(pars, function(x) paste(stk_order$CODE[stk_order$nh_stack_uval %in% x], collapse = ";")))
   parsct <- unlist(lapply(pars, length))
   
   uvals$ALLCODES <- parssp
   uvals$ALLCODES_CT <- parsct
-  uvals$ALLCODES_CT[uvals$VALUE == ""] <- 0
+  uvals$ALLCODES_CT[uvals$CODE == ""] <- 0
   
   if (is.null(spf)) {
     levels(r1) <- uvals
     names(r1) <- "nh_stack_resample"
   } else {
-    r1 <- merge(polys2, uvals, by.x = "value", by.y = "VALUE")
+    r1 <- merge(polys2, uvals, by.x = "code", by.y = "CODE")
     r1 <- st_transform(r1, proj)
     if (sp) return(as(r1,Class = "Spatial")) else return(r1)
   }
