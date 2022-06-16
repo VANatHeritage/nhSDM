@@ -23,4 +23,4 @@ build_pdf <- function() {
                sep = "")
   system(cmd)
 }
-# build_pdf()  # error in texi2pdf
+build_pdf()

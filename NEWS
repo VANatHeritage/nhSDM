@@ -1,3 +1,9 @@
+nhSDM 0.1.1
+================
+* `nh_stack`: adds `clip.feat` argument, which can provide sf data with masking 
+features for input rastfiles. Must have column named 'code', matching `codes` provided to function.
+
+
 nhSDM 0.0.6
 ================
 2019-10-10
