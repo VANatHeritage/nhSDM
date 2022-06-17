@@ -19,7 +19,7 @@ nh_patchdrop(
 
 \item{min.patch}{area of minimum patch size, in area units used in \code{rast}}
 
-\item{directions}{Integer. Which cells are considered adjacent? Should be 8 (default; Queen's case) or 4 (Rook's case). From \code{raster::clump}}
+\item{directions}{Integer. Which cells are considered adjacent? Should be 8 (default; Queen's case) or 4 (Rook's case). From \code{terra::patches}}
 
 \item{updatevalue}{Integer or NA. Value to apply to cells which do not meet the min.patch size. Default = 0.}
 }

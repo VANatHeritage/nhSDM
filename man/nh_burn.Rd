@@ -5,7 +5,7 @@
 \title{Add areas represented by features ('burn-in') to a binary raster SDM output, 
 plus areas within a buffer distance above specified threshold}
 \usage{
-nh_burn(spf, rast, orig.thresh = NULL, buffer = NA, return.thresh = FALSE, ...)
+nh_burn(spf, rast, orig.thresh = NULL, buffer = NA, return.thresh = FALSE)
 }
 \arguments{
 \item{spf}{input spatial features (sp or sf spatial object)}
@@ -17,8 +17,6 @@ nh_burn(spf, rast, orig.thresh = NULL, buffer = NA, return.thresh = FALSE, ...)
 \item{buffer}{numeric; spatial buffer distance around spf where threshold will be applied.}
 
 \item{return.thresh}{logical; whether to return thresholds along with raster in a list}
-
-\item{...}{Other arguments as to \code{raster::writeRaster}}
 }
 \value{
 SpatRaster

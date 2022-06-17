@@ -39,7 +39,8 @@
 #' spf <- sf::st_read("_data/occurrence/ambymabe.shp")
 #' rast <- terra::rast("_data/species/ambymabe/outputs/model_predictions/ambymabe_20171018_130837.tif")
 #' rast <- terra::crop(rast, spf)
-#' best_polys <- nh_best(rast, spf, top.percent = 0.01, min.size = 10000, min.dist <- 10000, num.patches = 100, rank.by = "value")
+#' best_polys <- nh_best(rast, spf, top.percent = 0.01, min.size = 10000, min.dist <- 10000, 
+#'    num.patches = 100, rank.by = "value")
 #' }
 
 nh_best <- function(rast, spf = NULL, top.percent = NULL, min.size = NULL, min.dist = NULL, num.patches = NULL, rank.by = 'area') {

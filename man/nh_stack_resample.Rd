@@ -11,7 +11,7 @@ nh_stack_resample(rast, lookup, fact = 10, spf = NULL)
 
 \item{lookup}{lookup table from nh_stack}
 
-\item{fact}{aggregation factor, in number of cells (see \code{?raster::aggregate})}
+\item{fact}{aggregation factor, in number of cells (see \code{?terra::aggregate})}
 
 \item{spf}{Optional vector spatial features to use for aggregation (sp or sf-class polygons). If supplied, \code{fact} will be ignored}
 }
@@ -22,16 +22,14 @@ SpatRaster or spf (with attributes added)
 Takes an output raster from nh_stack, and returns a lower-resolution
 version, with recalculated species assemblages for the larger cells.
 New values are "aggregated" by \code{fact}, the number of cells
-to aggregate in the x/y dimensions (see \code{?raster::aggregate}).
+to aggregate in the x/y dimensions (see \code{?terra::aggregate}).
 }
 \details{
 You can also provide polygons (sp or sf-class) to \code{spf}, over which
 to aggregate species assemblages. The polygons intersecting areas with
 data in \code{rast} are returned, with columns identifying species codes 
-and counts. This method will fail with large rasters (see \code{raster::zonal}),
-in which case processing subsets of the stack raster is advised. Polygons
-will be returned in their original projection, but processing internally
-is done in the raster's projection.
+and counts. Polygons will be returned in their original projection, but 
+processing internally is done in the raster's projection.
 }
 \examples{
 \dontrun{

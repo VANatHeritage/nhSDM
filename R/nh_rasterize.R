@@ -25,8 +25,8 @@
 #' @param priority column name in spf holding priority values for feature rasterization (higher values have priority)
 #' @param touches from \code{terra::rasterize}: If TRUE, all cells touched by lines or polygons are affected, not just those on the line render path, 
 #' or whose center point is within the polygon.
-#' @param rast.out Output raster file name (with file extension)
-#' @param ... Additional arguments to writeRaster (e.g. overwrite)
+#' @param rast.out Optional output raster file name (with file extension)
+#' @param ... Additional arguments to terra::writeRaster (e.g. overwrite)
 #' 
 #' @return SpatRaster
 #' 
@@ -44,8 +44,9 @@
 #' rast <- terra::rast("_data/species/ambymabe/outputs/model_predictions/ambymabe_20171018_130837.tif")
 #' 
 #' # rasterize
-#' rast_poly <- nh_rasterize(spf, rast, pred.vals = "prbblty", priority = "strord", buffer = spf$strord*15, touches=F, 
-#'    rast.out = "C:/David/scratch/nh_rasterize_poly.tif", overwrite = T)
+#' rast_poly <- nh_rasterize(spf, rast, pred.vals = "prbblty", priority = "strord", 
+#'    buffer = spf$strord*15, touches=F, rast.out = "C:/David/scratch/nh_rasterize_poly.tif", 
+#'    overwrite = T)
 #' rast_line <- nh_rasterize(spf, rast, pred.vals = "prbblty", priority = "strord", touches=T, 
 #'    rast.out = "C:/David/scratch/nh_rasterize_line.tif", overwrite = T)
 #' }

@@ -57,7 +57,8 @@ rast <- terra::rast("_data/species/ambymabe/outputs/model_predictions/ambymabe_2
 feature.burn <- st_buffer(spf, 250)
 feature.mask <- st_buffer(spf, 50000)
 raster.mask <- rast("D:/PSH/inputs/species_masks/no_med_hi_dev/no_med_hi_dev.tif")
-map <- nh_map(rast, thresh=0.75, feature.occ=spf, feature.burn=feature.burn, feature.mask=feature.mask, raster.mask=raster.mask, NULL)
+map <- nh_map(rast, thresh=0.75, feature.occ=spf, feature.burn=feature.burn, 
+   feature.mask=feature.mask, raster.mask=raster.mask, NULL)
 }
 }
 \author{

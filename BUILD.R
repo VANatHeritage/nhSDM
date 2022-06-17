@@ -8,8 +8,8 @@ use_build_ignore("working")
 use_build_ignore("recycling")
 
 document()
-install()
 check()
+install()
 rm(list=ls())
 
 ###

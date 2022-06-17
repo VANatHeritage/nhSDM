@@ -54,7 +54,8 @@ is required for resampling the stack (i.e. with \code{nh_stack_resample}).
 setwd("D:/PSH")
 rast <- rast("inputs/_masks/data_mask.tif")
 list <- sort(list.files(paste0("proj_psh/thumb"), full.names = T, pattern = ".tif$"))
-rastfiles <- c(list[sample(1:length(list), size=5)], "proj_psh/thumb/helevirg_10Aug2018.tif", "proj_psh/thumb/myotsoda_10May2018.tif")
+rastfiles <- c(list[sample(1:length(list), size=5)], "proj_psh/thumb/helevirg_10Aug2018.tif", 
+   "proj_psh/thumb/myotsoda_10May2018.tif")
 codes <- unlist(lapply(basename(rastfiles), function(x) strsplit(x, "_")[[1]][1]))
 
 stack <- nh_stack(rastfiles, rast, codes = NULL)

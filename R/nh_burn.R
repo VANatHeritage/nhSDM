@@ -22,7 +22,6 @@
 #' @param orig.thresh numeric between 0 and 1; threshold value to apply to raster
 #' @param buffer numeric; spatial buffer distance around spf where threshold will be applied.
 #' @param return.thresh logical; whether to return thresholds along with raster in a list
-#' @param ... Other arguments as to \code{raster::writeRaster}
 #' 
 #' @return SpatRaster
 #' 
@@ -41,7 +40,7 @@
 #' class_burn <- nh_burn(spf, rast, 0.75, buffer = 0)
 #' }
 
-nh_burn <- function(spf, rast, orig.thresh = NULL, buffer = NA, return.thresh = FALSE, ...) {
+nh_burn <- function(spf, rast, orig.thresh = NULL, buffer = NA, return.thresh = FALSE) {
   
   if (!is.null(orig.thresh) && (orig.thresh > 1 | orig.thresh < 0)) stop("orig.thresh value must be between 0 and 1.")
   if (is.null(orig.thresh)) omiss <- TRUE else omiss <- FALSE

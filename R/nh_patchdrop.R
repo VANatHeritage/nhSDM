@@ -13,7 +13,7 @@
 #' @param spf input spatial features (sp or sf spatial object)
 #' @param rast input binary raster output (values either NA/0 or 1)
 #' @param min.patch area of minimum patch size, in area units used in \code{rast}
-#' @param directions Integer. Which cells are considered adjacent? Should be 8 (default; Queen's case) or 4 (Rook's case). From \code{raster::clump}
+#' @param directions Integer. Which cells are considered adjacent? Should be 8 (default; Queen's case) or 4 (Rook's case). From \code{terra::patches}
 #' @param updatevalue Integer or NA. Value to apply to cells which do not meet the min.patch size. Default = 0.
 #' 
 #' @return SpatRaster

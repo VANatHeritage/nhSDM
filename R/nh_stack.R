@@ -49,7 +49,8 @@
 #' setwd("D:/PSH")
 #' rast <- rast("inputs/_masks/data_mask.tif")
 #' list <- sort(list.files(paste0("proj_psh/thumb"), full.names = T, pattern = ".tif$"))
-#' rastfiles <- c(list[sample(1:length(list), size=5)], "proj_psh/thumb/helevirg_10Aug2018.tif", "proj_psh/thumb/myotsoda_10May2018.tif")
+#' rastfiles <- c(list[sample(1:length(list), size=5)], "proj_psh/thumb/helevirg_10Aug2018.tif", 
+#'    "proj_psh/thumb/myotsoda_10May2018.tif")
 #' codes <- unlist(lapply(basename(rastfiles), function(x) strsplit(x, "_")[[1]][1]))
 #'
 #' stack <- nh_stack(rastfiles, rast, codes = NULL)
@@ -161,19 +162,17 @@ nh_stack <- function(rastfiles, rast, codes = NULL, return.table = TRUE, clip.fe
 #' Takes an output raster from nh_stack, and returns a lower-resolution
 #' version, with recalculated species assemblages for the larger cells.
 #' New values are "aggregated" by \code{fact}, the number of cells
-#' to aggregate in the x/y dimensions (see \code{?raster::aggregate}).
+#' to aggregate in the x/y dimensions (see \code{?terra::aggregate}).
 #' 
 #' You can also provide polygons (sp or sf-class) to \code{spf}, over which
 #' to aggregate species assemblages. The polygons intersecting areas with
 #' data in \code{rast} are returned, with columns identifying species codes 
-#' and counts. This method will fail with large rasters (see \code{raster::zonal}),
-#' in which case processing subsets of the stack raster is advised. Polygons
-#' will be returned in their original projection, but processing internally
-#' is done in the raster's projection.
+#' and counts. Polygons will be returned in their original projection, but 
+#' processing internally is done in the raster's projection.
 #' 
 #' @param rast raster output from nh_stack
 #' @param lookup lookup table from nh_stack
-#' @param fact aggregation factor, in number of cells (see \code{?raster::aggregate})
+#' @param fact aggregation factor, in number of cells (see \code{?terra::aggregate})
 #' @param spf Optional vector spatial features to use for aggregation (sp or sf-class polygons). If supplied, \code{fact} will be ignored
 #' 
 #' @return SpatRaster or spf (with attributes added)

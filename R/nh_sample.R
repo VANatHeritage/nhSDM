@@ -57,7 +57,7 @@ nh_sample <- function(spf, rast, num.samps = NULL, replace = FALSE, force.min = 
   
   message("Generating samples...")
   # handle sp/sf class
-  spf1 <- nhSDM:::tospf(spf, rast)
+  spf1 <- tospf(spf, rast)
   sp <- spf1[[1]]
   spf <- spf1[[2]]
   rm(spf1)
