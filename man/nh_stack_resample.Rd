@@ -2,7 +2,7 @@
 % Please edit documentation in R/nh_stack.R
 \name{nh_stack_resample}
 \alias{nh_stack_resample}
-\title{Resample a raster from nh_stack to a lower (coarser) resolution}
+\title{Aggregate values from a nh_stack to a lower (coarser) resolution raster, or within polygons}
 \usage{
 nh_stack_resample(rast, lookup, fact = 10, spf = NULL)
 }
@@ -19,15 +19,15 @@ nh_stack_resample(rast, lookup, fact = 10, spf = NULL)
 SpatRaster or spf (with attributes added)
 }
 \description{
-Takes an output raster from nh_stack, and returns a lower-resolution
+When, \code{spf=NULL}, takes an output raster from nh_stack, and returns a lower-resolution
 version, with recalculated species assemblages for the larger cells.
 New values are "aggregated" by \code{fact}, the number of cells
 to aggregate in the x/y dimensions (see \code{?terra::aggregate}).
 }
 \details{
-You can also provide polygons (sp or sf-class) to \code{spf}, over which
-to aggregate species assemblages. The polygons intersecting areas with
-data in \code{rast} are returned, with columns identifying species codes 
+Alternatively, you can aggregate species assemblages within polygons (sp or sf-class) 
+provided to \code{spf}. Polygons intersecting areas with non-NA
+cells in \code{rast} are returned, with columns identifying species codes 
 and counts. Polygons will be returned in their original projection, but 
 processing internally is done in the raster's projection.
 }
@@ -35,8 +35,9 @@ processing internally is done in the raster's projection.
 \dontrun{
 # stack <- nh_stack(list, rast, return.table = TRUE)
 
-# resample from 30m to 990m (~1km) resolution
+# resample from 30m to 990m resolution
 stack1km <- nh_stack_resample(stack[[1]], stack[[2]], fact = 33)
+# view raster attributes
 cats(stack1km)
 
 # view species count raster (index=3 is the 'ALLCODES_CT' column)

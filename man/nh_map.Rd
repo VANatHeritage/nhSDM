@@ -2,7 +2,8 @@
 % Please edit documentation in R/nh_map.R
 \name{nh_map}
 \alias{nh_map}
-\title{Make a suitable/unsuitable binary map, given a continuous SDM output or raster template}
+\title{Make a suitable/unsuitable binary map, given a continuous SDM output or raster template,
+burn-in features, and masks}
 \usage{
 nh_map(
   rast,

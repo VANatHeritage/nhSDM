@@ -2,7 +2,7 @@
 % Please edit documentation in R/nh_best.R
 \name{nh_best}
 \alias{nh_best}
-\title{Extract areas with best (highest value) as polygons from an SDM prediction raster, with optional feature mask}
+\title{Extract highest-value areas as polygons from an SDM prediction raster, with optional feature mask}
 \usage{
 nh_best(
   rast,

@@ -1,6 +1,7 @@
 # nh_stack
 
-#' Stack multiple binary SDM rasters into one raster layer, using terra
+#' Stack multiple binary rasters into one raster layer with attributes 
+#' identifying original layers
 #' 
 #' Takes a \code{rastfiles} of binary raster's filenames (values 0/1), 
 #' a template raster covering the extent desired for the stack, 
@@ -8,7 +9,7 @@
 #' for the rasters. Returns a single raster layer (factor type with an
 #' attribute table). 
 #' 
-#' The raster attribute table (accessed using \code{levels()}) 
+#' The raster attribute table (accessed using \code{cats()}) 
 #' has four columns:  `ID`: the unique integer value in the raster; `VALUE`:
 #' the internal nh_stack unique value for that `ID`, `ALLCODES`: the
 #' identity of species codes, pasted in a character vector seperated by `;`,
@@ -46,7 +47,6 @@
 #'
 #' @examples
 #' \dontrun{
-#' setwd("D:/PSH")
 #' rast <- rast("inputs/_masks/data_mask.tif")
 #' list <- sort(list.files(paste0("proj_psh/thumb"), full.names = T, pattern = ".tif$"))
 #' rastfiles <- c(list[sample(1:length(list), size=5)], "proj_psh/thumb/helevirg_10Aug2018.tif", 
@@ -54,6 +54,7 @@
 #' codes <- unlist(lapply(basename(rastfiles), function(x) strsplit(x, "_")[[1]][1]))
 #'
 #' stack <- nh_stack(rastfiles, rast, codes = NULL)
+#' # view raster attributes
 #' cats(stack[[1]])
 #' }
 
@@ -157,16 +158,16 @@ nh_stack <- function(rastfiles, rast, codes = NULL, return.table = TRUE, clip.fe
 
 # nh_stack_resample
 
-#' Resample a raster from nh_stack to a lower (coarser) resolution
+#' Aggregate values from a nh_stack to a lower (coarser) resolution raster, or within polygons 
 #' 
-#' Takes an output raster from nh_stack, and returns a lower-resolution
+#' When, \code{spf=NULL}, takes an output raster from nh_stack, and returns a lower-resolution
 #' version, with recalculated species assemblages for the larger cells.
 #' New values are "aggregated" by \code{fact}, the number of cells
 #' to aggregate in the x/y dimensions (see \code{?terra::aggregate}).
 #' 
-#' You can also provide polygons (sp or sf-class) to \code{spf}, over which
-#' to aggregate species assemblages. The polygons intersecting areas with
-#' data in \code{rast} are returned, with columns identifying species codes 
+#' Alternatively, you can aggregate species assemblages within polygons (sp or sf-class) 
+#' provided to \code{spf}. Polygons intersecting areas with non-NA
+#' cells in \code{rast} are returned, with columns identifying species codes 
 #' and counts. Polygons will be returned in their original projection, but 
 #' processing internally is done in the raster's projection.
 #' 
@@ -189,8 +190,9 @@ nh_stack <- function(rastfiles, rast, codes = NULL, return.table = TRUE, clip.fe
 #' \dontrun{
 #' # stack <- nh_stack(list, rast, return.table = TRUE)
 #' 
-#' # resample from 30m to 990m (~1km) resolution
+#' # resample from 30m to 990m resolution
 #' stack1km <- nh_stack_resample(stack[[1]], stack[[2]], fact = 33)
+#' # view raster attributes
 #' cats(stack1km)
 #' 
 #' # view species count raster (index=3 is the 'ALLCODES_CT' column)

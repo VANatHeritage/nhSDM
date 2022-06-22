@@ -1,6 +1,6 @@
 # nh_best
 
-#' Extract areas with best (highest value) as polygons from an SDM prediction raster, with optional feature mask
+#' Extract highest-value areas as polygons from an SDM prediction raster, with optional feature mask
 #' 
 #' If \code{spf} is given, areas intersecting these features (plus a buffer, if \code{min.dist} is specified) 
 #' will not be included in the returned polygons.

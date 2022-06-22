@@ -3,7 +3,7 @@
 \name{nh_burn}
 \alias{nh_burn}
 \title{Add areas represented by features ('burn-in') to a binary raster SDM output, 
-plus areas within a buffer distance above specified threshold}
+plus areas within a buffer distance above a threshold}
 \usage{
 nh_burn(spf, rast, orig.thresh = NULL, buffer = NA, return.thresh = FALSE)
 }
@@ -24,7 +24,7 @@ SpatRaster
 \description{
 Takes spatial features, a continuous raster (values between 0 and 1), and 
 returns a classified binary (0/1) raster. Areas intersecting \code{spf} features
-are assigned a value of 1 in the returned classified raster. Additional, areas
+are assigned a value of 1 in the returned classified raster. Additionally, areas
 within \code{buffer} distance of \code{spf} and above the threshold are set to 1. 
 See details for default calculation of \code{orig.thresh} and usage of \code{buffer}.
 }
@@ -41,7 +41,8 @@ the global threshold (if used); \code{min.cell}, the minimum cell value threshol
 \dontrun{
 spf <- sf::st_read("_data/occurrence/ambymabe.shp")
 rast <- terra::rast("_data/species/ambymabe/outputs/model_predictions/ambymabe_20171018_130837.tif")
-class_burn <- nh_burn(spf, rast, 0.75, buffer = 0)
+full_burn <- nh_burn(spf, rast, buffer = NA)
+buff_burn <- nh_burn(spf, rast, buffer = 10000)
 }
 }
 \author{

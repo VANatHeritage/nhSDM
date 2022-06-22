@@ -2,7 +2,11 @@ nhSDM 0.2.0
 ================
 2022-06-16
 
-* Replaced usage of 'raster' package with 'terra' for all functions. 
+GENERAL CHANGES
+
+* Replaced all usages of 'raster' in nhSDM with 'terra' equivalents (https://rspatial.org/terra/). 
+The 'raster' package is no longer imported by nhSDM, and raster objects are no longer 
+supported as inputs.
 
 
 nhSDM 0.0.6

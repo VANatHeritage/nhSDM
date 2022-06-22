@@ -2,7 +2,8 @@
 % Please edit documentation in R/nh_stack.R
 \name{nh_stack}
 \alias{nh_stack}
-\title{Stack multiple binary SDM rasters into one raster layer, using terra}
+\title{Stack multiple binary rasters into one raster layer with attributes 
+identifying original layers}
 \usage{
 nh_stack(rastfiles, rast, codes = NULL, return.table = TRUE, clip.feat = NULL)
 }
@@ -28,7 +29,7 @@ for the rasters. Returns a single raster layer (factor type with an
 attribute table).
 }
 \details{
-The raster attribute table (accessed using \code{levels()}) 
+The raster attribute table (accessed using \code{cats()}) 
 has four columns:  `ID`: the unique integer value in the raster; `VALUE`:
 the internal nh_stack unique value for that `ID`, `ALLCODES`: the
 identity of species codes, pasted in a character vector seperated by `;`,
@@ -51,7 +52,6 @@ is required for resampling the stack (i.e. with \code{nh_stack_resample}).
 }
 \examples{
 \dontrun{
-setwd("D:/PSH")
 rast <- rast("inputs/_masks/data_mask.tif")
 list <- sort(list.files(paste0("proj_psh/thumb"), full.names = T, pattern = ".tif$"))
 rastfiles <- c(list[sample(1:length(list), size=5)], "proj_psh/thumb/helevirg_10Aug2018.tif", 
@@ -59,6 +59,7 @@ rastfiles <- c(list[sample(1:length(list), size=5)], "proj_psh/thumb/helevirg_10
 codes <- unlist(lapply(basename(rastfiles), function(x) strsplit(x, "_")[[1]][1]))
 
 stack <- nh_stack(rastfiles, rast, codes = NULL)
+# view raster attributes
 cats(stack[[1]])
 }
 }

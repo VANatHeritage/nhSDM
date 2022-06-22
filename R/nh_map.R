@@ -1,6 +1,7 @@
 # nh_map
 
-#' Make a suitable/unsuitable binary map, given a continuous SDM output or raster template
+#' Make a suitable/unsuitable binary map, given a continuous SDM output or raster template,
+#' burn-in features, and masks
 #' 
 #' This function performs a reclassification of a continuous map to a binary one,
 #' and then performs additional changes to the binary map, depending on inputs. If
