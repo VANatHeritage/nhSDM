@@ -264,6 +264,7 @@ nh_stack_resample <- function(rast, lookup, fact = 10, spf = NULL) {
     zonr <- gRasterize(spf, rast, value = "burnval")
     
     message("Aggregating stack by polygons...")
+    activeCat(rast) <- "CODE"  # set active level to be CODE. This *may* have effect on zonal, but it appears to extract the factor value regardless.
     zon <- as.data.frame(zonal(rast, zonr,
                                fun = function(x, ...) {
                                  uv <- unique(x)
@@ -271,7 +272,8 @@ nh_stack_resample <- function(rast, lookup, fact = 10, spf = NULL) {
                                    sp <- NA
                                  } else {
                                    uv <- uv[!is.na(uv)]
-                                   cats <- paste(lev$category[lev$ID %in% uv], collapse = "")
+                                   # cats <- paste(lev$category[lev$ID %in% uv], collapse = "")  # This was used when numeric raster values were extracted to x; seems terra changed a setting.
+                                   cats <- paste(uv, collapse="")
                                    if (cats != "") {
                                      sp <- sort(unique(stri_sub(cats, seq(1, stri_length(cats),by = len), length = len)))
                                      sp <- paste(sp, collapse = "")
@@ -282,12 +284,12 @@ nh_stack_resample <- function(rast, lookup, fact = 10, spf = NULL) {
                                  spp <<- c(spp, sp)
                                  return(1)
                                }))
-    zon$code <- spp
-    polys2 <- merge(spf, zon, by.x = "burnval", by.y = "burnval")
+    zon$CODE <- spp
+    polys2 <- merge(spf, zon[c("CODE", "burnval")], by.x = "burnval", by.y = "burnval")
     polys2$burnval <- NULL
     polys2$nh_stack <- NULL
     
-    uvals <- data.frame(CODE = unique(polys2$code)[!is.na(unique(polys2$code))])
+    uvals <- data.frame(CODE = unique(polys2$CODE)[!is.na(unique(polys2$CODE))])
   }
   
   message("Calculating stack attributes...")
@@ -307,9 +309,36 @@ nh_stack_resample <- function(rast, lookup, fact = 10, spf = NULL) {
     levels(r1) <- uvals
     names(r1) <- "nh_stack_resample"
   } else {
-    r1 <- merge(polys2, uvals, by.x = "code", by.y = "CODE")
+    r1 <- merge(polys2, uvals, by.x = "CODE", by.y = "CODE")
     r1 <- st_transform(r1, proj)
     if (sp) return(as(r1,Class = "Spatial")) else return(r1)
   }
   return(r1)
 }
+
+# Get total area of different codes in the stack raster. Returns a new lookup data.frame with CELL_AREA column.
+# nh_stack_areas <- function(rast, lookup) {
+#   
+#   # split length
+#   len <- unique(nchar(lookup$nh_stack_uval))
+#   
+#   # get levels
+#   lev <- cats(rast)[[1]]
+#   freq.tab <- freq(rast)
+#   names(freq.tab) <- c("layer", "CODE", "CELL_COUNT")
+#   lev2 <- merge(lev, freq.tab[c("CODE", "CELL_COUNT")], by = "CODE")
+#   
+#   # split codes for each row in lev2
+#   lev2.codes <- lapply(lev2$CODE, function(x) if (stri_length(x) > len) stri_sub(x, from = seq(1, stri_length(x), by = len), length = len) else x)
+#   lookup$CELL_AREA <- NA
+#   
+#   for (i in 1:nrow(lookup)) {
+#     row <- lookup[i,]
+#     mat <- unlist(lapply(lev2.codes, FUN = function(x) {row$nh_stack_uval %in% x}))
+#     cell.area <- sum(lev2[mat,]$CELL_COUNT) * prod(res(rast))
+#     lookup$CELL_AREA[i] <- cell.area
+#   }
+#   
+#   return(lookup)
+#   
+# }
