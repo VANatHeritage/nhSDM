@@ -2,45 +2,36 @@
 % Please edit documentation in R/nh_burn.R
 \name{nh_burn}
 \alias{nh_burn}
-\title{Add areas represented by features ('burn-in') to a binary raster SDM output}
+\title{Add areas represented by features ('burn-in') to a binary raster SDM output, 
+plus areas within a buffer distance above a threshold}
 \usage{
-nh_burn(spf, rast, orig.thresh = NULL, buffer = 0, return.thresh = FALSE, ...)
+nh_burn(spf, rast, orig.thresh = NULL, buffer = NA, return.thresh = FALSE)
 }
 \arguments{
 \item{spf}{input spatial features (sp or sf spatial object)}
 
 \item{rast}{input raster model output (values between 0 and 1)}
 
-\item{orig.thresh}{numeric between 0 and 1; 'global' threshold value to apply to raster}
+\item{orig.thresh}{numeric between 0 and 1; threshold value to apply to raster}
 
-\item{buffer}{numeric; spatial buffer around spf to include in burn-in}
+\item{buffer}{numeric; spatial buffer distance around spf where threshold will be applied.}
 
 \item{return.thresh}{logical; whether to return thresholds along with raster in a list}
-
-\item{...}{Other arguments as to \code{raster::writeRaster}}
 }
 \value{
-RasterLayer
+SpatRaster
 }
 \description{
 Takes spatial features, a continuous raster (values between 0 and 1), and 
-returns a classified binary (0/1) raster. Areas greater than \code{orig.thresh} are
-set to 1, all others 0. Areas intersecting \code{spf} features
-are assigned a value of 1 in the returned classified raster. See details
-for default calculation of \code{orig.thresh} and usage of \code{buffer}.
+returns a classified binary (0/1) raster. Areas intersecting \code{spf} features
+are assigned a value of 1 in the returned classified raster. Additionally, areas
+within \code{buffer} distance of \code{spf} and above the threshold are set to 1. 
+See details for default calculation of \code{orig.thresh} and usage of \code{buffer}.
 }
 \details{
 When \code{buffer} is used or \code{orig.thresh} is not provided,
-a minimum cell value (min.cell) across all \code{spf} is calculated.
-The min.cell value will be used as a threshold
-for the full raster, or just areas within \code{buffer} distance of \code{spf},
-if \code{buffer} is greater than 0.
-
-If \code{buffer} is greater than 0 and \code{orig.thresh} is not NULL, \code{orig.thresh}
-is used as the threshold for the full raster. Additionally,
-cells within \code{buffer} distance of \code{spf} which are greater than the
-calculated min.cell value are also set to 1. If a given \code{orig.thresh} is lower 
-than the calculated min.cell value, \code{buffer} will have no impact on the output.
+a minimum cell value (min.cell) of values within \code{spf} is calculated and 
+used as the threshold.
 
 The default is to return the raster only. If \code{return.thresh = TRUE}, the function will
 return a list with 3 named objects: \code{rast}, the output raster; \code{orig.thresh}, 
@@ -48,9 +39,10 @@ the global threshold (if used); \code{min.cell}, the minimum cell value threshol
 }
 \examples{
 \dontrun{
-spf <- st_read("ambymabe/polygon_data/ambymabe.shp")
-rast <- raster("ambymabe/grids/ambymabe_20171018_130837.tif")
-class_burn <- nh_burn(spf, rast, 0.75, 250, filename = "model_classified.tif", datatype = "INT2U")
+spf <- sf::st_read("_data/occurrence/ambymabe.shp")
+rast <- terra::rast("_data/species/ambymabe/outputs/model_predictions/ambymabe_20171018_130837.tif")
+full_burn <- nh_burn(spf, rast, buffer = NA)
+buff_burn <- nh_burn(spf, rast, buffer = 10000)
 }
 }
 \author{

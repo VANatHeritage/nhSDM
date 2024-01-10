@@ -2,31 +2,23 @@
 % Please edit documentation in R/nhSDM_notexported.R
 \name{gRasterize}
 \alias{gRasterize}
-\title{Rasterize with temp file parameters and all polygon values = 1}
+\title{Rasterize features}
 \usage{
 gRasterize(spf, rast, value = 1, background = NA)
 }
 \arguments{
 \item{spf}{input sf or sp object}
 
-\item{rast}{raster dataset with desired output projection, extent, cell size}
+\item{rast}{terra raster dataset with desired output projection, extent, cell size}
 
 \item{value}{integer value to apply to areas covered by spf}
 
 \item{background}{value to apply to areas not covered by spf}
 }
 \value{
-raster object
+rast object
 }
 \description{
-A temporary raster and shapefile are created in the raster temp directory, and 
-deleted.
-}
-\details{
-This is used internally in nh_burn instead of raster::rasterize, which was found to
-be very slow for large and/or many feature rasterizing. In some cases a 
-'striping' was noticed in the resulting raster, in areas where there were no features.
-
-Previous versions used GDAL, now uses R package fasterize.
+This is a wrapper around terra::rasterize, used internally in nh_burn and nh_stack.
 }
 \keyword{internal}

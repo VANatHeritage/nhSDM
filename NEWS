@@ -1,7 +1,12 @@
-nhSDM 0.1.1
+nhSDM 0.2.0
 ================
-* `nh_stack`: adds `clip.feat` argument, which can provide sf data with masking 
-features for input rastfiles. Must have column named 'code', matching `codes` provided to function.
+2024-01-10
+
+GENERAL CHANGES
+
+* Replaced usages of 'raster' in nhSDM with 'terra' equivalents (https://rspatial.org/terra/). 
+The 'raster' package is no longer imported by nhSDM, and raster objects are no longer 
+supported as inputs.
 
 
 nhSDM 0.0.6

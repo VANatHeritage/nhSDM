@@ -5,10 +5,11 @@ library(devtools)
 # use_build_ignore("BUILD.R")
 # use_build_ignore("nhSDM.pdf")
 use_build_ignore("working")
+use_build_ignore("recycling")
 
 document()
-install()
 check()
+install()
 rm(list=ls())
 
 ###
@@ -23,4 +24,4 @@ build_pdf <- function() {
                sep = "")
   system(cmd)
 }
-build_pdf()
+build_pdf()  # fixed error using: https://felixfan.github.io/Font-ts1-zi4r-at-540-not-found/

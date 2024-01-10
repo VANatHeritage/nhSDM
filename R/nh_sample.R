@@ -41,19 +41,21 @@
 #'
 #' @importFrom sf st_crs st_transform st_cast st_buffer st_as_sf st_intersection st_geometry_type st_length st_area st_centroid st_crs<-
 #' @importFrom methods as
-#' @import raster
+#' @import terra
 #' @export
 #'
 #' @examples
 #' \dontrun{
-#' r<-raster::raster("AnnMnTemp.tif")
-#' spf <- rgdal::readOGR("ambymabe/polygon_data", "ambymabe")
-#' # can also use sf: spf <- sf::st_read("ambymabe/polygon_data/ambymabe.shp")
-#' spf.samps <- nh_sample(spf, r, num.samps)
+#' spf <- sf::st_read("_data/occurrence/ambymabe.shp")
+#' rast <- terra::rast("_data/species/ambymabe/outputs/model_predictions/ambymabe_20171018_130837.tif")
+#' spf$num.samps <- sample(1:5, nrow(spf), replace = T)
+#' spf.samps <- nh_sample(spf, rast, num.samps =spf$num.samps, replace = F, force.min = T)
+#' nrow(spf.samps) == sum(spf$num.samps)  # Should be TRUE when force.min = T.
 #' }
 
 nh_sample <- function(spf, rast, num.samps = NULL, replace = FALSE, force.min = FALSE) {
-
+  
+  message("Generating samples...")
   # handle sp/sf class
   spf1 <- tospf(spf, rast)
   sp <- spf1[[1]]
@@ -67,9 +69,8 @@ nh_sample <- function(spf, rast, num.samps = NULL, replace = FALSE, force.min = 
       stop("num.samps must a vector of length one, or length equal to spf.")
     }
   }
-
-  # seq raster
-  r1 <- crop(rast, st_sf(st_buffer(st_as_sfc(st_bbox(spf)), dist = res(rast)[1]))) # crop to 1-cell buffered extenet of spf
+  # make seq raster
+  r1 <- crop(rast, st_sf(st_buffer(st_as_sfc(st_bbox(spf)), dist = res(rast)[1]))) # crop to 1-cell buffered extent of spf
   r2 <- r1
   values(r2) <- 1:ncell(r1)
   r2 <- mask(r2, r1)
@@ -77,31 +78,33 @@ nh_sample <- function(spf, rast, num.samps = NULL, replace = FALSE, force.min = 
   rm(r1)
 
   # loop over polygons
-  for (i in 1:length(spf$geometry)) {
+  for (i in 1:nrow(spf)) {
     suppressWarnings(rm(a2s))
     p <- spf[i,]
+    # Dump to single-part features
     pall <- st_cast(p)
-
+  
+    # Loop over each feature
     for (xp in 1:length(pall$geometry)) {
       pxp <- pall[xp,]
-      gb <- st_buffer(pxp, res(r2)[1])
-      try(a2 <- rasterToPolygons(crop(r2, extent(extent(gb)[1], extent(gb)[2], extent(gb)[3], extent(gb)[4]))), silent = TRUE)
+      gb <- st_buffer(pxp, dist = res(rast)[1])
+      try(a2 <- as.polygons(crop(r2, gb)), silent = T)
       if (!exists("a2")) message("Polygon at index value [", i , ".", xp , "] does not intersect raster. Skipping...")
       if (!exists("a2")) next
       a2 <- st_as_sf(a2)
       row.names(a2) <- paste0(row.names(a2), ".", xp)
       a2s1 <- suppressWarnings(st_intersection(a2, pxp))
       rm(a2)
-      # rbind polygons
+      # rbind by original feature
       if (!exists("a2s")) a2s <- a2s1 else a2s <- rbind(a2s, a2s1)
     }
     if (!exists("a2s")) next
-    # pts <- gPointOnSurface(a2s, byid = TRUE, id = row.names(a2s))
-    # score
+
+    # score features relative to length/area (used for sampling probability)
     if (all(st_geometry_type(a2s) == "LINESTRING")) a2s$score <- as.numeric(st_length(a2s)) else
       a2s$score <- as.numeric(st_area(a2s))
-    suppressWarnings(pts <- st_centroid(a2s)) #not sure about weird polygon cetroids...
-
+    suppressWarnings(pts <- st_centroid(a2s)) #not sure about weird polygon centroids...
+    # select samples
     if (is.null(num.samps)) {
       pts.s <- pts
     } else {

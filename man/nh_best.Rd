@@ -2,7 +2,7 @@
 % Please edit documentation in R/nh_best.R
 \name{nh_best}
 \alias{nh_best}
-\title{Extract areas with best (highest value) as polygons from an SDM prediction raster, with optional feature mask}
+\title{Extract highest-value areas as polygons from an SDM prediction raster, with optional feature mask}
 \usage{
 nh_best(
   rast,
@@ -50,10 +50,11 @@ For better performance, crop the raster prior to running, and/or use a very low
 }
 \examples{
 \dontrun{
-spf <- sf::st_read("inputs/species/ambymabe/polygon_data/ambymabe.shp")
-rast <- raster::raster("outputs/ambymabe/grids/ambymabe_20171018_130837.tif")
-rast <- raster::crop(rast, spf)
-best_polys <- nh_best(rast, spf)
+spf <- sf::st_read("_data/occurrence/ambymabe.shp")
+rast <- terra::rast("_data/species/ambymabe/outputs/model_predictions/ambymabe_20171018_130837.tif")
+rast <- terra::crop(rast, spf)
+best_polys <- nh_best(rast, spf, top.percent = 0.01, min.size = 10000, min.dist <- 10000, 
+   num.patches = 100, rank.by = "value")
 }
 }
 \author{

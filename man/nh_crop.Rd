@@ -10,16 +10,17 @@ nh_crop(rast)
 \item{rast}{input raster}
 }
 \value{
-RasterLayer
+SpatRaster
 }
 \description{
 This function will reduce the extent of a raster, by removing rows/columns
-from all sides if they do not have any non-NA cells with a value greater than zero.
+from all sides which do not have any non-NA cells with a value greater than zero.
 One buffer row/column is left on each side.
 }
 \examples{
 \dontrun{
-rast <- rast <- raster("ambymabe_16May2018.tif")
+rast <- terra::rast("_data/species/ambymabe/outputs/model_predictions/ambymabe_20171018_130837.tif")
+values(rast) <- ifelse(values(rast) > 0.3, 1, NA)
 rast.crop <- nh_crop(rast)
 
 # should be TRUE
