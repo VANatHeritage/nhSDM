@@ -13,6 +13,9 @@ nh_group(spf, sep.dist = 0, union = FALSE)
 
 \item{union}{whether to union output groups into multi-features}
 }
+\value{
+sp or sf object (same as input)
+}
 \description{
 Input features are allocated into new groups depending
 on whether they lie within the separation distance of
@@ -37,7 +40,7 @@ requires the package \code{dplyr} to be installed.
 }
 \examples{
 \dontrun{
-spf <- rgdal::readOGR("D:/SDM/Tobacco/inputs/species/ambymabe/polygon_data", "ambymabe")
+spf <- rgdal::readOGR("ambymabe/polygon_data", "ambymabe")
 spg <- nh_group(spf, 1000)
 }
 }

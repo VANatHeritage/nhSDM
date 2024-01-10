@@ -2,7 +2,7 @@
 % Please edit documentation in R/nh_sample.R
 \name{nh_sample}
 \alias{nh_sample}
-\title{Create points in polygons in reference raster cells}
+\title{Create points in features in reference raster cells}
 \usage{
 nh_sample(spf, rast, num.samps = NULL, replace = FALSE, force.min = FALSE)
 }
@@ -11,45 +11,51 @@ nh_sample(spf, rast, num.samps = NULL, replace = FALSE, force.min = FALSE)
 
 \item{rast}{raster dataset with extent overlapping spf}
 
-\item{num.samps}{number of samples to create in each polygon (see details)}
+\item{num.samps}{number of samples to create in each feature (see details)}
 
 \item{replace}{whether to sample with or without replacement}
 
-\item{force.min}{whether to always create \code{num.samps} points, even if they are duplicates}
+\item{force.min}{whether to force \code{num.samps} points in features, even if they are duplicates}
+}
+\value{
+sp or sf object (points)
 }
 \description{
-For each spatial polygon, a given number (\code{num_samps})
-of points are created in cells that the polygon intersects.
-The points will inherit the raster's projection.
+For each spatial feature, a given number (\code{num_samps})
+of points are created in cells that the feature intersects.
 }
 \details{
 \code{num.samps} can be a a proportion (a decimal value < 1), single integer,
 or vector of integers equal to length of spf indicated the number of samples
-to take from each polygon. If left NULL, \code{num.samps} will
-be set to the number of cells [n] intersecting the polygon. If a proportion is given
+to take from each feature. If left NULL, \code{num.samps} will
+be set to the number of cells [n] intersecting the feature. If a proportion is given
 (e.g., 0.5), than [n * num.samps] will be returned. If a single integer is given,
-\code{num.samps} points will be sampled in each polygon.
+\code{num.samps} points will be sampled in each feature.
 
-When \code{replace = FALSE} and {force.min = FALSE} (defaults),
+When \code{replace = FALSE} and \code{force.min = FALSE} (defaults),
 each cell can only contain one point (across
-each polygon, and the entire returned set of points). In this case, when the number
+each feature, and the entire returned set of points). In this case, when the number
 of samples points to create exceeds the number of unique cells intersected by a given
-polygon, the number of samples for that polygon is reduced to the number of cells.
+feature, the number of samples for that feature equals the number of cells.
 If \code{replace = TRUE}, sampling is done with replacement and duplicates
 may be taken. The special case \code{replace = FALSE} and \code{force.min = TRUE}
-will always return \code{num.samps} per polygon. It only produces duplicates
-if \code{num.samps} exceeds the number of cells intersecting the polygon,
+will always return \code{num.samps} per feature. It only produces duplicates
+if \code{num.samps} exceeds the number of cells intersecting the feature,
 in which case it will replicate the samples until \code{num.samps} is reached.
 
-If CRS do not match, the SpatialPolygons will be transformed to the CRS
+If CRS do not match, the features will be transformed to the CRS
 of the raster.
+
+A column `feat.id` is added to the output point features to indicate the row number
+of the feature that the point was generated within.
 }
 \examples{
 \dontrun{
-r<-raster::raster("D:/SDM/Tobacco/env_vars/Tobacco/AnnMnTemp.tif")
-spf <- rgdal::readOGR("D:/SDM/Tobacco/inputs/species/ambymabe/polygon_data", "ambymabe")
-spf <- sf::st_read("D:/SDM/Tobacco/inputs/species/ambymabe/polygon_data/ambymabe.shp")
-spf.samps <- nh_sample(spf, r, num.samps)
+spf <- sf::st_read("_data/occurrence/ambymabe.shp")
+rast <- terra::rast("_data/species/ambymabe/outputs/model_predictions/ambymabe_20171018_130837.tif")
+spf$num.samps <- sample(1:5, nrow(spf), replace = T)
+spf.samps <- nh_sample(spf, rast, num.samps =spf$num.samps, replace = F, force.min = T)
+nrow(spf.samps) == sum(spf$num.samps)  # Should be TRUE when force.min = T.
 }
 }
 \author{

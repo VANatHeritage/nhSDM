@@ -25,41 +25,37 @@
 #' @param spf input spatial features (sp or sf spatial object)
 #' @param sep.dist separation distance with which to define groups (see description)
 #' @param union whether to union output groups into multi-features
+#' 
+#' @return sp or sf object (same as input)
 #'
 #' @author David Bucklin
 #'
 #' @importFrom methods as
-#' @importFrom sf st_as_sf st_distance st_is_longlat
+#' @importFrom sf st_as_sf st_distance st_is_longlat %>%
 #' @importFrom utils installed.packages
 #'
 #' @export
 #'
 #' @examples
 #' \dontrun{
-#' spf <- rgdal::readOGR("D:/SDM/Tobacco/inputs/species/ambymabe/polygon_data", "ambymabe")
+#' spf <- rgdal::readOGR("ambymabe/polygon_data", "ambymabe")
 #' spg <- nh_group(spf, 1000)
 #' }
 
 nh_group <- function(spf, sep.dist = 0, union = FALSE) {
 
-  # make sure spdf
-
   # handle name conflicts...
   # dt <- gsub("\\s|:|-", "", as.character(Sys.time()))
   #  if ("group" %in% names(spf))
 
-  if (grepl("^Spatial*", class(spf)[1])) {
-    sp <- TRUE
-    spf <- st_as_sf(spf)
-  } else if (grepl("sf", class(spf)[1])) {
-    sp <- FALSE
-  } else {
-    stop("Must provide either 'sp' or 'sf'-class spatial object.")
-  }
-  spf <- st_zm(spf)
-
-  row.names(spf) <- 1:length(spf$geometry)
-  spf$TEMPRN <- row.names(spf)
+  # handle sp/sf class
+  spf1 <- tospf(spf)
+  sp <- spf1[[1]]
+  spf <- spf1[[2]]
+  rm(spf1)
+  
+  # seq for joining later
+  spf$TEMPRNZZ <- 1:length(spf$geometry)
 
   if (isTRUE(st_is_longlat(spf))) {
       if (!"lwgeom" %in% installed.packages()) stop("Need to install package 'lwgeom' for lat/lon distance calculations.")
@@ -101,16 +97,17 @@ nh_group <- function(spf, sep.dist = 0, union = FALSE) {
     grps[subg] <- n
   }
 
-  polyg <- data.frame(TEMPRN = names(grps), group = as.numeric(unlist(grps)))
-  spf <-merge(spf, polyg, by = "TEMPRN")
-  spf$TEMPRN <- NULL
+  polyg <- data.frame(TEMPRNZZ = names(grps), group = as.numeric(unlist(grps)))
+  spf <-merge(spf, polyg, by = "TEMPRNZZ")
+  spf$TEMPRNZZ <- NULL
 
   if (union) {
     if (!"dplyr" %in% installed.packages()) {
-      message("Install 'dplyr' to enable union. Returning non-unioned features...")
-      break
+      message("Install package 'dplyr' to enable union. Returning non-unioned features...")
+    } else {
+      group <- NULL # just here to avoid check() notes (undefined global variable)
+      spf <- spf %>% dplyr::group_by(group) %>% dplyr::summarize(count = n())
     }
-    spf <- spf %>% dplyr::group_by(group) %>% dplyr::summarize(count = n())
   }
 
   if (sp) return(as(spf,Class = "Spatial")) else return(spf)

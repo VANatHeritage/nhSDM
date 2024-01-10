@@ -1,5 +1,147 @@
+nhSDM 0.2.0
+================
+2022-06-16
+
+GENERAL CHANGES
+
+* Replaced all usages of 'raster' in nhSDM with 'terra' equivalents (https://rspatial.org/terra/). 
+The 'raster' package is no longer imported by nhSDM, and raster objects are no longer 
+supported as inputs.
+
+
+nhSDM 0.0.6
+================
+2019-10-10
+
+NEW FUNCTIONS
+
+* `nh_linefill`: For line-based SDM predictions along a network (e.g. stream reaches), 
+identify lines between predicted suitable lines
+
+* `nh_map`: Makes a suitable/unsuitable binary raster map, given a continuous SDM output or raster
+template. Includes a set of arguments which provide options to further modify the map using
+feature or raster datasets.
+
+
+nhSDM 0.0.5-1
+================
+2019-08-22
+
+GENERAL CHANGES
+
+* `nh_stack`: Allowed use of either binary 1/0 or 1/NoData rasters as input
+(0 and NoData treated the same). Previously allowed only 1/0 rasters. 
+Also added check for raster templates that are too large for the function.
+
+
+nhSDM 0.0.5
+================
+2019-07-08
+
+GENERAL CHANGES
+
+* New library import: `fasterize`. Function `fasterize::fasterize` is 
+now used in place of external GDAL rasterization for functions requiring
+rasterization (nh_rasterize, internal `gRasterize` [nh_burn, nh_stack_resample]). 
+
+* `nh_rasterize`: `pred.vals` and `priority` arguments now use the column names from `spf` 
+as their value.
+
+BUG FIXES
+
+* `nh_stack_resample`: fixed issue due to naming of `levels` for the stack raster, affecting
+usage where the input stack is directly from `nh_stack` (as opposed to loaded from a file).
+
+
+nhSDM 0.0.4-3
+================
+2019-05-01
+
+BUG FIXES
+
+* `nh_stack`: Fixed bug affecting large-extent rasters
+
+NEW FEATURES
+
+* `nh_rasterize`: Added `priority` argument, for ordering features prior to rasterization. Higher values have preference. Default
+behavior when `priority = NULL` is now set to order according to `pred.vals`.
+
+nhSDM 0.0.4-2
+================
+2019-01-03
+
+NEW FUNCTION
+
+* `nh_stack_resample`: allows to create a reduced-resolution (coarser) raster version of a 
+previously-generated stack (using `nh_stack`). It can also summarize species assemblages 
+by polygons, using the `spf` argument.
+
+nhSDM 0.0.4-1
+================
+2018-11-05
+
+GENERAL CHANGES
+
+* `sf` and `raster` to Depends
+
+BUG FIXES
+
+* `nh_sample`: Fixed bug with LINESTRING geometries; uses st_length as probability for sampling. 
+
+nhSDM 0.0.4
+================
+NEW FUNCTION
+
+* `nh_rasterize`: convert vector SDM predictions to raster, with optional buffer
+
+nhSDM 0.0.3-1
+=================
+2018-08-13
+
+BUG FIX
+
+* internal function gRasterize had issues with overlapping/adjacent polygons - used union 
+to combine them prior to writing to shapefile.
+
+GENERAL
+
+* `nh_best`: added argument `min.dist` to excludes areas from consideration within min.dist of 
+`spf`, when given. Also re-arranged argument order for this function.
+
+nhSDM 0.0.3
+=================
+2018-07-26
+
+NEW FUNCTIONS
+
+* `nh_proj`: create new SDM project with folder structure and database
+
+* `nh_stack`: stack binary SDM rasters into a single layer, indentifying
+unique assemblages
+
+nhSDM 0.0.2
+=================
+2018-06-14
+
+NEW FUNCTIONS
+
+* `nh_patchdrop`: drop contiguous cell groups that are smaller
+than a given size threshold
+
+* `gRasterize`: internal function for spatial feature rasterizing. Now
+uses `gdalUtils::gdal_rasterize` making `nh_burn` reliant on a valid GDAL install.
+
+nhSDM 0.0.1-1
+=================
+2018-03-14
+
+* New functions `nh_burn`, `nh_best`
+
+* internal function script added.
+
 nhSDM 0.0.1
 =================
+2018-02-08
 
 ** INITIAL RELEASE ON GITHUB **
 

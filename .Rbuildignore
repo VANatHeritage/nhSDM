@@ -1,3 +1,6 @@
 ^.*\.Rproj$
 ^\.Rproj\.user$
 ^BUILD\.R$
+^nhSDM\.pdf$
+^working$
+^recycling$
